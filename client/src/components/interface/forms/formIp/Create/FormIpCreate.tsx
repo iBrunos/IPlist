@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -20,7 +20,25 @@ const FormIpCreate: React.FC<{
     const [createdAt, setCreatedAt] = useState<string>("");
     const [updatedAt, setUpdatedAt] = useState<string>("");
     const [nameEmployee, setNameEmployee] = useState<string>("");
-  
+
+    const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
+        const value: string = e.target.value;
+        // Remove todos os caracteres que não são números, pontos ou barras
+        const formattedValue: string = value.replace(/[^\d./]/g, '');
+
+        // Dividir a string em partes separadas por ponto ou barra
+        const parts: string[] = formattedValue.split(/\.|\//);
+
+        // Reformatar para garantir que haja no máximo 4 partes separadas por pontos ou barras
+        const formattedIp: string = parts
+            .slice(0, 4) // Permitir apenas 4 partes
+            .map((part: string) => part.slice(0, 3)) // Limitar cada parte a 3 caracteres
+            .join('.') // Juntar as partes com ponto
+            .replace(/\.+/g, '.'); // Remover pontos extras
+
+        setIp(formattedIp);
+    };
+
     useEffect(() => {
         // Preencher automaticamente a descrição com o valor do localStorage para o campo nameEmployee
         const storedNameEmployee = localStorage.getItem('nameEmployee');
@@ -36,7 +54,7 @@ const FormIpCreate: React.FC<{
             const currentDate = new Date();
             const formattedCreatedAt = currentDate.toISOString(); // Formato ISO 8601
             const formattedUpdatedAt = currentDate.toISOString(); // Formato ISO 8601
-    
+
             const requestBody = {
                 ip,
                 description: description + " (por: " + nameEmployee + ")",
@@ -44,7 +62,7 @@ const FormIpCreate: React.FC<{
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
             };
-    
+
             const response = await fetch('http://localhost:3001/ips/create', {
                 method: 'POST',
                 headers: {
@@ -52,7 +70,7 @@ const FormIpCreate: React.FC<{
                 },
                 body: JSON.stringify(requestBody),
             });
-    
+
 
             if (response.ok) {
                 const data = await response.json();
@@ -104,13 +122,32 @@ const FormIpCreate: React.FC<{
                                 >
                                     IP
                                 </label>
+                                <div className='flex'>
+                                    <input
+                                        id="ip"
+                                        type="text"
+                                        value={ip}
+                                        required
+                                        onChange={handleChange}
+                                        className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
+                                    />
+                                    <span className="flex items-center px-2 text-2xl text-gray-700 dark:text-gray-200">/</span>
+                                </div>
+                            </div>
+                            <div>
+                                <label
+                                    className="text-gray-700 dark:text-gray-200"
+                                    htmlFor="username"
+                                >
+                                    &nbsp;
+                                </label>
                                 <input
                                     id="ip"
                                     type="text"
                                     value={ip}
                                     required
-                                    onChange={(e) => setIp(e.target.value)}
-                                    className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
+                                    onChange={handleChange}
+                                    className="block w-20 px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
                                 />
                             </div>
                             <div>
