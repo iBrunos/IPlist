@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>API | Agendamento</title>
+  <link rel="icon" type="favicon" href="" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
+
+    body {
+      font-family: 'Poppins', Arial, sans-serif;
+      background-color: #f2f2f2;
+      text-align: center;
+    }
+
+    h1 {
+      color: #333333;
+      font-size: 32px;
+      margin-top: 50px;
+    }
+
+    h2 {
+      color: #333333;
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    span {
+      color: rgb(0, 183, 0);
+    }
+
+    a {
+      color: #000000;
+      text-decoration: none;
+    }
+
+    .container {
+      width: 600px;
+      margin: 0 auto;
+      padding-top: 50px;
+    }
+
+    .logo {
+      margin-bottom: 20px;
+      width: 200px;
+      height: auto;
+    }
+
+    table {
+      width: 100%;
+      margin-top: 30px;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    
+    th {
+      background-color: #f2f2f2;
+    }
+    
+    .link:hover {
+    font-weight: 600;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <img class="logo" src="../public/imgs/SX.png" alt="Logo da Empresa">
+    <h1>Agendamento - Application Programming Interface (API)</h1>
+    <h2>Status: <span>200 OK</span> | O Back-End está online e funcional.</h2>
+    <table>
+      <tr>
+        <th>Rota</th>
+        <th>Descrição</th>
+      </tr>
+      <!-- Rota / -->
+      <tr>
+        <td class="link"><a href="/">/</a></td>
+        <td>Rota principal.</td>
+      </tr>
+      <!-- Rota /auth -->
+      <tr>
+        <td class="link"><a href="/auth">/auth</a></td>
+        <td>Rota para autenticação de usuários.</td>
+      </tr>
+      <!-- Rota /auth/signup -->
+      <tr>
+        <td class="link"><a href="/auth/signup">/auth/signup</a></td>
+        <td>Rota para cadastrar usuários.</td>
+      </tr>
+      <!-- Rota /auth/login -->
+      <tr>
+        <td class="link"><a href="/auth/login">/auth/login</a></td>
+        <td>Rota para fazer login.</td>
+      </tr>
+      <!-- Rota /auth/:id -->
+      <tr>
+        <td class="link"><a href="/auth/:id">/auth/:id</a></td>
+        <td>Rota para obter informações de usuário por ID.</td>
+      </tr>
+      <!-- Rota /services -->
+      <tr>
+        <td class="link"><a href="/services">/services</a></td>
+        <td>Rota para obter informações sobre serviços.</td>
+      </tr>
+      <!-- Rota /services/create -->
+      <tr>
+        <td class="link"><a href="/services/create">/services/create</a></td>
+        <td>Rota para criar um novo serviço.</td>
+      </tr>
+      <!-- Rota /services/:id -->
+      <tr>
+        <td class="link"><a href="/services/:id">/services/:id</a></td>
+        <td>Rota para obter informações de um serviço por ID.</td>
+      </tr>
+      <!-- Rota /employees -->
+      <tr>
+        <td class="link"><a href="/employees">/employees</a></td>
+        <td>Rota para obter informações sobre funcionários.</td>
+      </tr>
+      <!-- Rota /employees/create -->
+      <tr>
+        <td class="link"><a href="/employees/create">/employees/create</a></td>
+        <td>Rota para cadastrar um novo funcionário.</td>
+      </tr>
+      <!-- Rota /employees/:id -->
+      <tr>
+        <td class="link"><a href="/employees/:id">/employees/:id</a></td>
+        <td>Rota para obter informações de um funcionário por ID.</td>
+      </tr>
+      <!-- Rota /schedules -->
+      <tr>
+        <td class="link"><a href="/schedules">/schedules</a></td>
+        <td>Rota para obter informações sobre agendamentos.</td>
+      </tr>
+      <!-- Rota /schedules/create -->
+      <tr>
+        <td class="link"><a href="/schedules/create">/schedules/create</a></td>
+        <td>Rota para criar um novo agendamento.</td>
+      </tr>
+      <!-- Rota /schedules/:id -->
+      <tr>
+        <td class="link"><a href="/schedules/:id">/schedules/:id</a></td>
+        <td>Rota para obter informações de um agendamento por ID.</td>
+      </tr>
+      <!-- Rota /clients -->
+      <tr>
+        <td class="link"><a href="/clients">/clients</a></td>
+        <td>Rota para obter informações sobre clientes.</td>
+      </tr>
+      <!-- Rota /clients/create -->
+      <tr>
+        <td class="link"><a href="/clients/create">/clients/create</a></td>
+        <td>Rota para cadastrar um novo cliente.</td>
+      </tr>
+      <!-- Rota /clients/:id -->
+      <tr>
+        <td class="link"><a href="/clients/:id">/clients/:id</a></td>
+        <td>Rota para obter informações de um cliente por ID.</td>
+      </tr>
+      <!-- Rota /appearance -->
+      <tr>
+        <td class="link"><a href="/appearance">/appearance</a></td>
+        <td>Rota para obter informações sobre a aparência.</td>
+      </tr>
+      <!-- Rota /appearance/create -->
+      <tr>
+        <td class="link"><a href="/appearance/create">/appearance/create</a></td>
+        <td>Rota para cadastrar uma nova aparência.</td>
+      </tr>
+      <!-- Rota /appearance/:id -->
+      <tr>
+        <td class="link"><a href="/appearance/:id">/appearance/:id</a></td>
+        <td>Rota para obter informações de uma aparência por ID.</td>
+      </tr>
+    </table>
+  </div>
+  <h3>Version <span style="display: inline-block; font-size: 24px; color: #000000; border-radius: 6px; padding: 0px 0px;"></span> 1.0</h3>
+</body>
+</html>
