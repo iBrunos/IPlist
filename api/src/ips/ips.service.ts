@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDto } from './dto/create-ips.dto';
 import { UpdateDto } from './dto/update-ips.dto';
 import * as fs from 'fs';
+import * as ftp from 'basic-ftp'; // Importe a biblioteca FTP, por exemplo
 
 export interface Ip {
   ip: string;
@@ -14,6 +15,7 @@ export interface Ip {
 @Injectable()
 export class IpsService {
   private readonly filePath: string = '../api/data/test.txt';
+  private readonly filePathData: string = '../api/data/data.txt';
 
   async findAll(): Promise<Ip[]> {
     const ipsData = await this.readFile();
@@ -21,20 +23,19 @@ export class IpsService {
     return ips;
   };
 
-async create(createDto: CreateDto): Promise<{ message: string, createdIp: Ip }> {
-  const ips = await this.findAll();
-  const newIp: Ip = {
-    ip: createDto.ip.replace(/\\\\/g, '\\'), // Garante que apenas uma barra invertida seja passada
-    description: createDto.description,
-    isActive: createDto.isActive,
-    createdAt: new Date().toISOString(), // Convertido para string no formato ISO
-    updatedAt: null, // Definindo como null inicialmente
-  };
-  ips.push(newIp);
-  await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
-  return { message: 'Ip created successfully', createdIp: newIp };
-}
-
+  async create(createDto: CreateDto): Promise<{ message: string, createdIp: Ip }> {
+    const ips = await this.findAll();
+    const newIp: Ip = {
+      ip: createDto.ip.replace(/\\\\/g, '\\'), // Garante que apenas uma barra invertida seja passada
+      description: createDto.description,
+      isActive: createDto.isActive,
+      createdAt: new Date().toISOString(), // Convertido para string no formato ISO
+      updatedAt: null, // Definindo como null inicialmente
+    };
+    ips.push(newIp);
+    await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
+    return { message: 'Ip created successfully', createdIp: newIp };
+  }
 
   async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string, updatedIp: Ip }> {
     const ips = await this.findAll();
@@ -53,16 +54,12 @@ async create(createDto: CreateDto): Promise<{ message: string, createdIp: Ip }> 
 
   async deleteById(id: string): Promise<{ message: string, deletedIp: Ip }> {
     const ips = await this.findAll();
-  
     const index = ips.findIndex(item => item.ip === id);
     if (index === -1) {
       throw new NotFoundException('Ip not found');
     }
-  
     const deletedItem = ips.splice(index, 1)[0];
-   
     await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
-    
     return { message: 'Ip deleted successfully', deletedIp: deletedItem };
   }
 
@@ -79,21 +76,45 @@ async create(createDto: CreateDto): Promise<{ message: string, createdIp: Ip }> 
   }
 
   private async writeFile(ips: Ip[]): Promise<void> {
-    const sanitizedIps = ips.map(ip => ({
+    // Salvando no arquivo JSON
+    const sanitizedIpsJSON = ips.map(ip => ({
       ...ip,
-      ip: ip.ip.replace(/\\\\/g, '\\') // Substitui barras invertidas duplicadas por uma única barra invertida
+      ip: ip.ip.replace(/\\\\/g, '\\')
     }));
+    const contentJSON = JSON.stringify(sanitizedIpsJSON, null, 2);
+    fs.writeFile(this.filePath, contentJSON, (err) => {
+      if (err) {''
+        console.error('Error writing JSON file:', err);
+      }
+    });
   
-    const content = JSON.stringify(sanitizedIps, null, 2); // Formata o array de IPs para JSON com indentação
+    // Salvando no arquivo data.txt
+    const contentTXT = ips.map(ip => `${ip.ip} #${ip.description}`).join('\n');
     return new Promise((resolve, reject) => {
-      fs.writeFile(this.filePath, content, (err) => {
+      fs.writeFile(this.filePathData, contentTXT, async (err) => {
         if (err) {
           reject(err);
         } else {
           resolve();
+          await this.uploadFileViaFTP(this.filePathData); // Chama a função para enviar o arquivo via FTP após escrever o arquivo data.txt
         }
       });
     });
   }
-  
+
+
+  private async uploadFileViaFTP(filePath: string): Promise<void> {
+    const client = new ftp.Client();
+    try {
+      await client.access({
+        host: process.env.FTP_HOST,
+        user: process.env.FTP_USER,
+        password: process.env.FTP_PASSWORD
+      });
+      await client.uploadFrom(filePath, 'data.txt');
+    } catch (error) {
+      console.error('Error uploading file via FTP:', error);
+    }
+    client.close();
+}
 }

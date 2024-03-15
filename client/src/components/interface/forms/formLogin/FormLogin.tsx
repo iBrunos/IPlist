@@ -60,12 +60,12 @@ const LoginForm: React.FC = () => {
       if (data.message === "Login successful") {
         // Use localStorage to store the token and role
         localStorage.setItem('permission', data.employee._doc.role);
-        localStorage.setItem('nameEmployee', data.employee._doc.name);
+        localStorage.setItem('user', data.employee._doc.name);
         localStorage.setItem('sessionInfo', data.token);
 
 
         // Redirect to the desired page
-        router.push("/auth/admin");
+        router.push("/auth/admin/ips");
       } else {
         setPassword("");
         setUsername("");

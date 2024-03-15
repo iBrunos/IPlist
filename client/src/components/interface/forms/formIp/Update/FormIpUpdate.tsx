@@ -61,15 +61,15 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
             };
+            const encodedIP = encodeURIComponent(ipData.ip);
 
-            const response = await fetch(`http://localhost:3001/ips/${ipData.ip}`, {
+            const response = await fetch(`http://localhost:3001/ips/${encodedIP}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify(updatedIp),
             });
-
             if (response.ok) {
                 toast.success("O IP foi atualizado!");
                 onUpdateIp(updatedIp); // Chame a função para atualizar o IP na lista

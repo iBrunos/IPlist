@@ -20,7 +20,7 @@ const FormIpCreate: React.FC<{
     const [isActive, setIsActive] = useState<boolean>(false);
     const [createdAt, setCreatedAt] = useState<string>("");
     const [updatedAt, setUpdatedAt] = useState<string>("");
-    const [nameEmployee, setNameEmployee] = useState<string>("");
+    const [user, setUser] = useState<string>("");
 
 
     const handleChangeCidr = (e: ChangeEvent<HTMLInputElement>): void => {
@@ -58,10 +58,10 @@ const FormIpCreate: React.FC<{
       }, []);
 
     useEffect(() => {
-        // Preencher automaticamente a descrição com o valor do localStorage para o campo nameEmployee
-        const storedNameEmployee = localStorage.getItem('nameEmployee');
-        if (storedNameEmployee) {
-            setNameEmployee(storedNameEmployee);
+        // Preencher automaticamente a descrição com o valor do localStorage para o campo user
+        const storedUser = localStorage.getItem('user');
+        if (storedUser) {
+            setUser(storedUser);
         }
     }, []);
 
@@ -75,7 +75,7 @@ const FormIpCreate: React.FC<{
 
             const requestBody = {
                 ip: cidr ? `${ip}/${cidr}` : ip,
-                description: `${description} (por: ${nameEmployee})`,
+                description: `${description} (por: ${user})`,
                 isActive,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
