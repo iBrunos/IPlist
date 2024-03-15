@@ -21,19 +21,20 @@ export class IpsService {
     return ips;
   };
 
-  async create(createDto: CreateDto): Promise<{ message: string, createdIp: Ip }> {
-    const ips = await this.findAll();
-    const newIp: Ip = {
-      ip: createDto.ip,
-      description: createDto.description,
-      isActive: createDto.isActive,
-      createdAt: new Date().toISOString(), // Convertido para string no formato ISO
-      updatedAt: null, // Definindo como null inicialmente
-    };
-    ips.push(newIp);
-    await this.writeFile(JSON.stringify(ips));
-    return { message: 'Ip created successfully', createdIp: newIp };
-  }
+async create(createDto: CreateDto): Promise<{ message: string, createdIp: Ip }> {
+  const ips = await this.findAll();
+  const newIp: Ip = {
+    ip: createDto.ip.replace(/\\\\/g, '\\'), // Garante que apenas uma barra invertida seja passada
+    description: createDto.description,
+    isActive: createDto.isActive,
+    createdAt: new Date().toISOString(), // Convertido para string no formato ISO
+    updatedAt: null, // Definindo como null inicialmente
+  };
+  ips.push(newIp);
+  await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
+  return { message: 'Ip created successfully', createdIp: newIp };
+}
+
 
   async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string, updatedIp: Ip }> {
     const ips = await this.findAll();
@@ -46,20 +47,22 @@ export class IpsService {
     ips[index].description = updatedIp.description;
     ips[index].isActive = updatedIp.isActive;
     ips[index].updatedAt = new Date().toISOString(); // Atualizando a data de modificação
-    await this.writeFile(JSON.stringify(ips));
+    await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
     return { message: 'Ip updated successfully', updatedIp: ips[index] }; // Retornando o IP atualizado
   }
-  
-
 
   async deleteById(id: string): Promise<{ message: string, deletedIp: Ip }> {
     const ips = await this.findAll();
+  
     const index = ips.findIndex(item => item.ip === id);
     if (index === -1) {
       throw new NotFoundException('Ip not found');
     }
+  
     const deletedItem = ips.splice(index, 1)[0];
-    await this.writeFile(JSON.stringify(ips));
+   
+    await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
+    
     return { message: 'Ip deleted successfully', deletedIp: deletedItem };
   }
 
@@ -75,7 +78,13 @@ export class IpsService {
     });
   }
 
-  private async writeFile(content: string): Promise<void> {
+  private async writeFile(ips: Ip[]): Promise<void> {
+    const sanitizedIps = ips.map(ip => ({
+      ...ip,
+      ip: ip.ip.replace(/\\\\/g, '\\') // Substitui barras invertidas duplicadas por uma única barra invertida
+    }));
+  
+    const content = JSON.stringify(sanitizedIps, null, 2); // Formata o array de IPs para JSON com indentação
     return new Promise((resolve, reject) => {
       fs.writeFile(this.filePath, content, (err) => {
         if (err) {
@@ -86,4 +95,5 @@ export class IpsService {
       });
     });
   }
+  
 }

@@ -34,17 +34,33 @@ const IpsTable: React.FC = () => {
       .then((data) => {
         setIps(data);
       })
-      .catch((error) => console.error("Erro ao buscar funcionários:", error));
+      .catch((error) => console.error("Erro ao buscar ips:", error));
   };
 
   const handleAddIpClick = () => {
     setShowAddIp(true);
   };
-
+  const fetchIps = async () => {
+    try {
+      const response = await fetch('http://localhost:3001/ips');
+      if (response.ok) {
+        const data = await response.json();
+        setIps(data);
+      } else {
+        console.error('Erro ao buscar os IPs:', response.statusText);
+        toast.error("Erro ao buscar os IPs!");
+      }
+    } catch (error) {
+      console.error('Erro de rede ao buscar os IPs:', error);
+      toast.error("Erro de rede ao buscar os IPs!");
+    }
+  };
   const handleIpCreated = (newIp: Ip) => {
+    fetchIps();
     setIps([...ips, newIp]);
   };
 
+  
   const handleCloseAddIps = () => {
     setShowAddIp(false);
     // Atualiza a tabela chamando a API novamente
@@ -53,10 +69,11 @@ const IpsTable: React.FC = () => {
       .then((data) => {
         setIps(data);
       })
-      .catch((error) => console.error("Erro ao buscar funcionários:", error));
+      .catch((error) => console.error("Erro ao buscar ips:", error));
   };
 
   const handleUpdateIp = (updatedIp: Ip) => {
+    fetchIps();
     const updatedIps = ips.map((ipItem) =>
       ipItem.ip === updatedIp.ip ? updatedIp : ipItem
     );
@@ -65,31 +82,31 @@ const IpsTable: React.FC = () => {
   };
 
   useEffect(() => {
-    fetch('http://localhost:3001/ips')
-      .then((response) => response.json())
-      .then((data) => {
-        setIps(data);
-      })
-      .catch((error) => console.error('Erro ao buscar serviços:', error));
+    fetchIps();
   }, []);
 
   const handleDeleteIp = async (ipToDelete: string) => {
+   
     const ipItemToDelete = ips.find((ipItem) => ipItem.ip === ipToDelete);
     if (ipItemToDelete) {
+     
       setConfirmDeleteIp(ipItemToDelete);
+    } else {
+    
     }
   };
-
+  
   const confirmDelete = async () => {
     if (confirmDeleteIp) {
       try {
-        const response = await fetch(`http://localhost:3001/ips/${confirmDeleteIp.ip}`, {
+  
+        const response = await fetch(`http://localhost:3001/ips/${encodeURIComponent(confirmDeleteIp.ip)}`, {
           method: 'DELETE',
         });
-
+  
         if (response.ok) {
-          // Atualize a lista de serviços após a exclusão bem-sucedida
           const updatedIps = ips.filter((ip) => ip.ip !== confirmDeleteIp.ip);
+      
           toast.success("O ip foi excluído!");
           setIps(updatedIps);
         } else {
@@ -100,11 +117,11 @@ const IpsTable: React.FC = () => {
         console.error('Erro de rede ao excluir o ip:', error);
         toast.error("Erro de rede ao excluir o ip!");
       } finally {
-        setConfirmDeleteIp(null); // Limpe o estado de confirmação de exclusão
+        setConfirmDeleteIp(null);
       }
     }
   };
-
+  
   const cancelDelete = () => {
     setConfirmDeleteIp(null); // Limpe o estado de confirmação de exclusão
   };

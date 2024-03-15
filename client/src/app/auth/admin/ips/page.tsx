@@ -31,7 +31,7 @@ export default function Magic() {
 
   return (
     <>
-     <main className="bg-gradient-to-t from-gray-200 via-gray-300 to-gray-300">
+     <main className="bg-gradient-to-t from-gray-200 via-gray-300 h-full to-gray-300">
       <HeaderAdmin /> 
       <SpellsTable />
       </main>

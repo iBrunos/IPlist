@@ -26,8 +26,8 @@ export class IpsController {
     return this.ipsService.updateById(ip, updateDto);
   }
 
-  @Delete('/:id')
-  async deleteIp(@Param('id') id: string): Promise<{ message: string }> {
+  @Delete('/:ip')
+  async deleteIp(@Param('ip') id: string): Promise<{ message: string }> {
     return this.ipsService.deleteById(id); // Você precisará implementar este método no serviço
   }
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, ChangeEvent } from 'react';
+import React, { useState, useEffect, ChangeEvent, useRef } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -16,11 +16,21 @@ const FormIpCreate: React.FC<{
 }> = ({ onClose, onIpCreated }) => {
     const [ip, setIp] = useState<string>("");
     const [description, setDescription] = useState<string>("");
+    const [cidr, setCidr] = useState<string>("");
     const [isActive, setIsActive] = useState<boolean>(false);
     const [createdAt, setCreatedAt] = useState<string>("");
     const [updatedAt, setUpdatedAt] = useState<string>("");
     const [nameEmployee, setNameEmployee] = useState<string>("");
 
+
+    const handleChangeCidr = (e: ChangeEvent<HTMLInputElement>): void => {
+        const { value } = e.target;
+    
+        // Verifica se o valor inserido é um número
+        if (!isNaN(Number(value))) {
+          setCidr(value);
+        }
+      };
     const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const value: string = e.target.value;
         // Remove todos os caracteres que não são números, pontos ou barras
@@ -38,6 +48,14 @@ const FormIpCreate: React.FC<{
 
         setIp(formattedIp);
     };
+    const inputRef = useRef<HTMLInputElement>(null);
+
+    useEffect(() => {
+        // Verifica se inputRef.current não é null antes de chamar o método focus()
+        if (inputRef.current !== null) {
+          inputRef.current.focus();
+        }
+      }, []);
 
     useEffect(() => {
         // Preencher automaticamente a descrição com o valor do localStorage para o campo nameEmployee
@@ -56,13 +74,13 @@ const FormIpCreate: React.FC<{
             const formattedUpdatedAt = currentDate.toISOString(); // Formato ISO 8601
 
             const requestBody = {
-                ip,
-                description: description + " (por: " + nameEmployee + ")",
+                ip: cidr ? `${ip}/${cidr}` : ip,
+                description: `${description} (por: ${nameEmployee})`,
                 isActive,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
-            };
-
+              };
+            
             const response = await fetch('http://localhost:3001/ips/create', {
                 method: 'POST',
                 headers: {
@@ -78,6 +96,7 @@ const FormIpCreate: React.FC<{
 
                 setIp("");
                 setDescription("");
+                setCidr("");
                 setIsActive(false);
                 setCreatedAt("");
                 setUpdatedAt("");
@@ -112,7 +131,6 @@ const FormIpCreate: React.FC<{
                             </button>
                         </div>
                     </div>
-
                     <form className="" onSubmit={handleSubmit}>
                         <div className="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2">
                             <div>
@@ -126,12 +144,13 @@ const FormIpCreate: React.FC<{
                                     <input
                                         id="ip"
                                         type="text"
+                                        ref={inputRef}
                                         value={ip}
                                         required
                                         onChange={handleChange}
                                         className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
                                     />
-                                    <span className="flex items-center px-2 text-2xl text-gray-700 dark:text-gray-200">/</span>
+                                    <span className="flex items-center ml-4 px-2 text-4xl text-gray-700 dark:text-gray-200">/</span>
                                 </div>
                             </div>
                             <div>
@@ -144,9 +163,8 @@ const FormIpCreate: React.FC<{
                                 <input
                                     id="ip"
                                     type="text"
-                                    value={ip}
-                                    required
-                                    onChange={handleChange}
+                                    value={cidr}
+                                    onChange={handleChangeCidr}
                                     className="block w-20 px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
                                 />
                             </div>

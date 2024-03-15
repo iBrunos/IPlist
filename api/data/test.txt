@@ -1,1 +1,16 @@
-[{"ip":"192.168.1.106","description":"sdfsdf (por: admin)","isActive":false,"createdAt":"2024-03-14T17:35:22.228Z","updatedAt":"2024-03-14T18:47:33.418Z"},{"ip":"192.168.1.100","description":"ataque (por: admin)","isActive":false,"createdAt":"2024-03-14T18:01:45.912Z","updatedAt":"2024-03-14T18:47:46.660Z"},{"ip":"111.111.111.111","description":"test (por: admin)","isActive":false,"createdAt":"2024-03-14T19:05:58.563Z","updatedAt":null}]
+[
+  {
+    "ip": "52.158.213.444",
+    "description": "test (por: admin)",
+    "isActive": false,
+    "createdAt": "2024-03-15T02:51:08.374Z",
+    "updatedAt": "2024-03-15T02:51:37.202Z"
+  },
+  {
+    "ip": "40.124.170.249/33",
+    "description": "33 (por: admin)",
+    "isActive": false,
+    "createdAt": "2024-03-15T02:56:05.930Z",
+    "updatedAt": null
+  }
+]
