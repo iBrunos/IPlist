@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDto } from './dto/create-ips.dto';
 import { UpdateDto } from './dto/update-ips.dto';
 import * as fs from 'fs';
-import * as ftp from 'basic-ftp'; // Importe a biblioteca FTP, por exemplo
+import * as Client from 'ssh2-sftp-client'; // Importe a biblioteca SFTP
 
 export interface Ip {
   ip: string;
@@ -21,46 +21,45 @@ export class IpsService {
     const ipsData = await this.readFile();
     const ips: Ip[] = JSON.parse(ipsData);
     return ips;
-  };
-
-  async create(createDto: CreateDto): Promise<{ message: string, createdIp: Ip }> {
-    const ips = await this.findAll();
-    const newIp: Ip = {
-      ip: createDto.ip.replace(/\\\\/g, '\\'), // Garante que apenas uma barra invertida seja passada
-      description: createDto.description,
-      isActive: createDto.isActive,
-      createdAt: new Date().toISOString(), // Convertido para string no formato ISO
-      updatedAt: null, // Definindo como null inicialmente
-    };
-    ips.push(newIp);
-    await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
-    return { message: 'Ip created successfully', createdIp: newIp };
   }
 
-  async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string, updatedIp: Ip }> {
+  async create(createDto: CreateDto): Promise<{ message: string; createdIp: Ip }> {
+    const ips = await this.findAll();
+    const newIp: Ip = {
+      ip: createDto.ip.replace(/\\\\/g, '\\'),
+      description: createDto.description,
+      isActive: createDto.isActive,
+      createdAt: new Date().toISOString(),
+      updatedAt: null,
+    };
+    ips.push(newIp);
+    await this.writeFile(ips);
+    return { message: 'Ip criado com sucesso', createdIp: newIp };
+  }
+
+  async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; updatedIp: Ip }> {
     const ips = await this.findAll();
     const index = ips.findIndex(item => item.ip === id);
     if (index === -1) {
-      throw new NotFoundException('Ip not found');
+      throw new NotFoundException('Ip não encontrado');
     }
-    // Atualizar os campos do IP com base nos valores fornecidos em updatedIp
     ips[index].ip = updatedIp.ip;
     ips[index].description = updatedIp.description;
     ips[index].isActive = updatedIp.isActive;
-    ips[index].updatedAt = new Date().toISOString(); // Atualizando a data de modificação
-    await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
-    return { message: 'Ip updated successfully', updatedIp: ips[index] }; // Retornando o IP atualizado
+    ips[index].updatedAt = new Date().toISOString();
+    await this.writeFile(ips);
+    return { message: 'Ip atualizado com sucesso', updatedIp: ips[index] };
   }
 
-  async deleteById(id: string): Promise<{ message: string, deletedIp: Ip }> {
+  async deleteById(id: string): Promise<{ message: string; deletedIp: Ip }> {
     const ips = await this.findAll();
     const index = ips.findIndex(item => item.ip === id);
     if (index === -1) {
-      throw new NotFoundException('Ip not found');
+      throw new NotFoundException('Ip não encontrado');
     }
     const deletedItem = ips.splice(index, 1)[0];
-    await this.writeFile(ips); // Passa o array de IPs diretamente para o método writeFile
-    return { message: 'Ip deleted successfully', deletedIp: deletedItem };
+    await this.writeFile(ips);
+    return { message: 'Ip deletado com sucesso', deletedIp: deletedItem };
   }
 
   private async readFile(): Promise<string> {
@@ -76,19 +75,17 @@ export class IpsService {
   }
 
   private async writeFile(ips: Ip[]): Promise<void> {
-    // Salvando no arquivo JSON
     const sanitizedIpsJSON = ips.map(ip => ({
       ...ip,
-      ip: ip.ip.replace(/\\\\/g, '\\')
+      ip: ip.ip.replace(/\\\\/g, '\\'),
     }));
     const contentJSON = JSON.stringify(sanitizedIpsJSON, null, 2);
     fs.writeFile(this.filePath, contentJSON, (err) => {
-      if (err) {''
-        console.error('Error writing JSON file:', err);
+      if (err) {
+        console.error('Erro ao escrever no arquivo JSON:', err);
       }
     });
-  
-    // Salvando no arquivo data.txt
+
     const contentTXT = ips.map(ip => `${ip.ip} #${ip.description}`).join('\n');
     return new Promise((resolve, reject) => {
       fs.writeFile(this.filePathData, contentTXT, async (err) => {
@@ -96,25 +93,26 @@ export class IpsService {
           reject(err);
         } else {
           resolve();
-          await this.uploadFileViaFTP(this.filePathData); // Chama a função para enviar o arquivo via FTP após escrever o arquivo data.txt
+          await this.uploadFileViaSFTP(this.filePathData); // Alterado para chamar a função de upload via SFTP
         }
       });
     });
   }
 
-
-  private async uploadFileViaFTP(filePath: string): Promise<void> {
-    const client = new ftp.Client();
+  private async uploadFileViaSFTP(filePath: string): Promise<void> {
+    const sftp = new Client();
     try {
-      await client.access({
-        host: process.env.FTP_HOST,
-        user: process.env.FTP_USER,
-        password: process.env.FTP_PASSWORD
+      await sftp.connect({
+        host: process.env.SFTP_HOST,
+        port: parseInt(process.env.SFTP_PORT),
+        username: process.env.SFTP_USER,
+        password: process.env.SFTP_PASSWORD,
       });
-      await client.uploadFrom(filePath, 'data.txt');
+      await sftp.put(filePath, 'data.txt'); // Envio do arquivo via SFTP
     } catch (error) {
-      console.error('Error uploading file via FTP:', error);
+      console.error('Erro ao enviar arquivo via SFTP:', error);
+    } finally {
+      sftp.end(); // Encerramento da conexão SFTP
     }
-    client.close();
-}
+  }
 }

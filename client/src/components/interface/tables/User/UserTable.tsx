@@ -48,7 +48,7 @@ const UserTable: React.FC = () => {
   const handleCloseAddUser = () => {
     setShowAddUser(false);
     // Atualize a tabela chamando a API novamente
-    fetch("https://api-bladefall.vercel.app/users")
+    fetch("http://localhost:3001/users")
       .then((response) => response.json())
       .then((data) => {
         setUsers(data);
@@ -57,7 +57,7 @@ const UserTable: React.FC = () => {
   };
 
   useEffect(() => {
-    fetch("https://api-bladefall.app/users")
+    fetch("http://localhost:3001/users")
       .then((response) => response.json())
       .then((data) => {
         setUsers(data);
@@ -68,7 +68,7 @@ const UserTable: React.FC = () => {
   const handleDeleteUser = async (id: string) => {
     try {
       const response = await fetch(
-        `https://api-bladefall.app/users/${id}`,
+        `http://localhost:3001/users/${id}`,
         {
           method: "DELETE",
         }
@@ -111,7 +111,7 @@ const UserTable: React.FC = () => {
         <section className="container px-4 justify-center ">
           <div className="flex items-center md:gap-x-3 lg:gap-x-3">
             <h1 className=" text-sm md:text-2xl lg:text-2xl font-bold text-gray-700 md:ml-8 lg:ml-8">
-              Equipe de Blade Fall
+              Usuários COGEL
             </h1>
             <span className="lg:flex md:flex hidden px-3 py-1 text-xs text-blue-600 bg-blue-100 rounded-full dark:bg-gray-800 dark:text-blue-400">
               {users.length} usuários

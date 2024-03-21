@@ -18,11 +18,16 @@ interface FormIpUpdateProps {
 
 const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpdateIp }) => {
 
+    const extractDescription = (fullDescription: string) => {
+        return fullDescription.split('(por:')[0].trim();
+    };
+
     const [ip, setIp] = useState<string>(ipData ? ipData.ip : "");
-    const [description, setDescription] = useState<string>(ipData ? ipData.description : "");
+    const [description, setDescription] = useState<string>(ipData ? extractDescription(ipData.description) : "");
     const [isActive, setIsActive] = useState<boolean>(ipData ? ipData.isActive : true);
     const [createdAt, setCreatedAt] = useState<string>(ipData ? ipData.createdAt : "");
     const [updatedAt, setUpdatedAt] = useState<string>(ipData ? ipData.updatedAt : "");
+    const [employeeName, setEmployeeName] = useState<string>(localStorage.getItem('user') || ''); // Obter o nome do usuário do localStorage
     const formRef = useRef<HTMLDivElement | null>(null);
 
     const handleClose = () => {
@@ -56,7 +61,7 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
 
             const updatedIp = {
                 ip,
-                description,
+                description: `${description} (por: ${employeeName})`,
                 isActive,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
@@ -129,8 +134,9 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
                                 >
                                     Descrição
                                 </label>
-                                <textarea
+                                <input
                                     id="description"
+                                    type="text"
                                     value={description}
                                     required
                                     onChange={(e) => setDescription(e.target.value)}

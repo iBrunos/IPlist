@@ -1,65 +1,51 @@
 [
   {
-    "ip": "52.158.213.444/23",
-    "description": "test (por: admin)",
-    "isActive": false,
-    "createdAt": "2024-03-15T02:51:08.374Z",
-    "updatedAt": "2024-03-15T12:52:54.955Z"
-  },
-  {
     "ip": "40.124.170.249/34",
-    "description": "33 (por: admin)",
+    "description": "33eeee (por: admin)",
     "isActive": false,
     "createdAt": "2024-03-15T02:56:05.930Z",
-    "updatedAt": "2024-03-15T12:53:00.094Z"
+    "updatedAt": "2024-03-21T13:11:39.849Z"
   },
   {
     "ip": "52.158.213.44/22",
     "description": "t (por: admin)",
     "isActive": false,
     "createdAt": "2024-03-15T12:02:21.208Z",
-    "updatedAt": null
+    "updatedAt": "2024-03-15T14:47:19.113Z"
   },
   {
     "ip": "52.252.250.240/44",
     "description": "4 (por: admin)",
     "isActive": false,
     "createdAt": "2024-03-15T12:03:54.724Z",
-    "updatedAt": null
+    "updatedAt": "2024-03-15T14:47:20.920Z"
   },
   {
     "ip": "52.252.250.240/3",
     "description": "3 (por: admin)",
     "isActive": false,
     "createdAt": "2024-03-15T12:04:56.966Z",
-    "updatedAt": "2024-03-15T12:52:50.165Z"
-  },
-  {
-    "ip": "3/3",
-    "description": "3 (por: admin)",
-    "isActive": false,
-    "createdAt": "2024-03-15T12:49:26.246Z",
-    "updatedAt": null
-  },
-  {
-    "ip": "6",
-    "description": "5 (por: admin)",
-    "isActive": false,
-    "createdAt": "2024-03-15T12:49:36.471Z",
-    "updatedAt": "2024-03-15T12:49:40.820Z"
+    "updatedAt": "2024-03-15T14:47:22.723Z"
   },
   {
     "ip": "16.62.191.237/22",
-    "description": "teste (por: admin)",
+    "description": "VAMOS NESSA (por: admin)",
     "isActive": false,
     "createdAt": "2024-03-15T13:02:58.697Z",
+    "updatedAt": "2024-03-21T13:14:49.062Z"
+  },
+  {
+    "ip": "444.444.444.444/33",
+    "description": "SSS (por: admin)",
+    "isActive": false,
+    "createdAt": "2024-03-21T13:19:04.947Z",
     "updatedAt": null
   },
   {
-    "ip": "333/33",
-    "description": "33 (por: admin)",
+    "ip": "666.666.666.666/22",
+    "description": "FELIPE (por: admin)",
     "isActive": false,
-    "createdAt": "2024-03-15T13:07:22.935Z",
+    "createdAt": "2024-03-21T13:40:17.671Z",
     "updatedAt": null
   }
 ]
