@@ -8,7 +8,7 @@ export class CreateDto {
   readonly description: string;
 
   @IsBoolean()
-  readonly isActive: boolean;
+  readonly disabled: boolean;
 
   @IsString()
   readonly createdAt: string;

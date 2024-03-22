@@ -8,7 +8,7 @@ import { isValid } from 'date-fns';
 interface Ip {
   ip: string;
   description: string;
-  isActive: boolean;
+  disabled: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -19,6 +19,7 @@ const IpsTable: React.FC = () => {
   const [editingIp, setEditingIp] = useState<Ip | null>(null);
   const [showEditIp, setShowEditIp] = useState(false);
   const [confirmDeleteIp, setConfirmDeleteIp] = useState<Ip | null>(null);
+  const [user, setUser] = useState<string>(localStorage.getItem('user') || ''); // Obter o nome do usuário do localStorage
 
   const handleEditIpClick = (ip: Ip) => {
     setEditingIp(ip);
@@ -60,7 +61,7 @@ const IpsTable: React.FC = () => {
     setIps([...ips, newIp]);
   };
 
-  
+
   const handleCloseAddIps = () => {
     setShowAddIp(false);
     // Atualiza a tabela chamando a API novamente
@@ -86,27 +87,27 @@ const IpsTable: React.FC = () => {
   }, []);
 
   const handleDeleteIp = async (ipToDelete: string) => {
-   
+
     const ipItemToDelete = ips.find((ipItem) => ipItem.ip === ipToDelete);
     if (ipItemToDelete) {
-     
+
       setConfirmDeleteIp(ipItemToDelete);
     } else {
-    
+
     }
   };
-  
+
   const confirmDelete = async () => {
     if (confirmDeleteIp) {
       try {
-  
+
         const response = await fetch(`http://localhost:3001/ips/${encodeURIComponent(confirmDeleteIp.ip)}`, {
           method: 'DELETE',
         });
-  
+
         if (response.ok) {
           const updatedIps = ips.filter((ip) => ip.ip !== confirmDeleteIp.ip);
-      
+
           toast.success("O ip foi excluído!");
           setIps(updatedIps);
         } else {
@@ -121,7 +122,7 @@ const IpsTable: React.FC = () => {
       }
     }
   };
-  
+
   const cancelDelete = () => {
     setConfirmDeleteIp(null); // Limpe o estado de confirmação de exclusão
   };
@@ -132,6 +133,53 @@ const IpsTable: React.FC = () => {
     }
     return format(date, "dd/MM/yyyy 'às' HH:mm:ss");
   };
+
+  const handleToggleChange = async (ip: Ip) => {
+    try {
+        const updatedIp = { ...ip, disabled: !ip.disabled }; // Alterna o estado de disabled
+        const response = await fetch(`http://localhost:3001/ips/${encodeURIComponent(ip.ip)}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(updatedIp),
+        });
+
+        if (response.ok) {
+            const updatedIps = ips.map((ipItem) => {
+                if (ipItem.ip === ip.ip) {
+                    const previousDescription = ipItem.description;
+                    const description = previousDescription.includes('(por:') ? previousDescription.split('(por:')[0].trim() : previousDescription;
+                    const updatedDescription = `${description} (por: ${user})`;
+                    const updatedIpItem = { ...ipItem, disabled: !ip.disabled, updatedAt: new Date().toISOString(), description: updatedDescription };
+                    // Remove '#' do início do IP se disabled for false
+                    if (!updatedIpItem.disabled && updatedIpItem.ip.startsWith('#')) {
+                        updatedIpItem.ip = updatedIpItem.ip.slice(1); // Remove o primeiro caractere, que é '#'
+                    }
+                    return updatedIpItem;
+                } else {
+                    return ipItem;
+                }
+            });
+            setIps(updatedIps);
+            toast.success(`IP ${updatedIp.disabled ? 'ativado' : 'desativado'} com sucesso!`);
+            fetch("http://localhost:3001/ips")
+            .then((response) => response.json())
+            .then((data) => {
+              setIps(data);
+            })
+            .catch((error) => console.error("Erro ao buscar ips:", error));
+        } else {
+            console.error('Erro ao alterar o estado do IP:', response.statusText);
+            toast.error('Erro ao alterar o estado do IP!');
+        }
+    } catch (error) {
+        console.error('Erro de rede:', error);
+        toast.error('Erro de rede ao alterar o estado do IP!');
+    }
+};
+
+
   return (
     <>
       <ToastContainer />
@@ -196,6 +244,12 @@ const IpsTable: React.FC = () => {
                         >
                           Ultima Alteração
                         </th>
+                        <th
+                          scope="col"
+                          className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                        >
+                          Desativar
+                        </th>
                         <th scope="col" className="relative py-3.5 px-4">
                           <span className="sr-only">Edit</span>
                         </th>
@@ -231,6 +285,19 @@ const IpsTable: React.FC = () => {
                             <div className="items-center max-w-full overflow-x-auto">
                               <p className="text-black">{formatCreatedAt(ip.updatedAt as string)}</p>
                             </div>
+                          </td>
+                          <td className="px-4 py-4 text-sm whitespace-normal break-words">
+                            <label className="inline-flex items-center cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={ip.disabled}
+                                onChange={() => handleToggleChange(ip)}
+                                className="sr-only peer"
+                                title={ip.disabled ? 'Desativar' : 'Ativar'}
+                                />
+                              <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
+                              <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
+                            </label>
                           </td>
                           <td className="px-4 py-4 text-sm whitespace-nowrap">
                             <div className="flex justify-end gap-x-6">

@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 interface Ip {
     ip: string;
     description: string;
-    isActive: boolean;
+    disabled: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -24,10 +24,10 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
 
     const [ip, setIp] = useState<string>(ipData ? ipData.ip : "");
     const [description, setDescription] = useState<string>(ipData ? extractDescription(ipData.description) : "");
-    const [isActive, setIsActive] = useState<boolean>(ipData ? ipData.isActive : true);
+    const [disabled, setdisabled] = useState<boolean>(ipData ? ipData.disabled : true);
     const [createdAt, setCreatedAt] = useState<string>(ipData ? ipData.createdAt : "");
     const [updatedAt, setUpdatedAt] = useState<string>(ipData ? ipData.updatedAt : "");
-    const [employeeName, setEmployeeName] = useState<string>(localStorage.getItem('user') || ''); // Obter o nome do usuário do localStorage
+    const [user, setUser] = useState<string>(localStorage.getItem('user') || ''); // Obter o nome do usuário do localStorage
     const formRef = useRef<HTMLDivElement | null>(null);
 
     const handleClose = () => {
@@ -61,8 +61,8 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
 
             const updatedIp = {
                 ip,
-                description: `${description} (por: ${employeeName})`,
-                isActive,
+                description: `${description} (por: ${user})`,
+                disabled,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
             };

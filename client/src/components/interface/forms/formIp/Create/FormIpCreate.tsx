@@ -5,7 +5,7 @@ import 'react-toastify/dist/ReactToastify.css';
 interface Ip {
     ip: string;
     description: string;
-    isActive: boolean;
+    disabled: boolean;
     createdAt: string;
     updatedAt: string;
 }
@@ -17,7 +17,7 @@ const FormIpCreate: React.FC<{
     const [ip, setIp] = useState<string>("");
     const [description, setDescription] = useState<string>("");
     const [cidr, setCidr] = useState<string>("");
-    const [isActive, setIsActive] = useState<boolean>(false);
+    const [disabled, setdisabled] = useState<boolean>(false);
     const [createdAt, setCreatedAt] = useState<string>("");
     const [updatedAt, setUpdatedAt] = useState<string>("");
     const [user, setUser] = useState<string>("");
@@ -76,7 +76,7 @@ const FormIpCreate: React.FC<{
             const requestBody = {
                 ip: cidr ? `${ip}/${cidr}` : ip,
                 description: `${description} (por: ${user})`,
-                isActive,
+                disabled,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
               };
@@ -97,7 +97,7 @@ const FormIpCreate: React.FC<{
                 setIp("");
                 setDescription("");
                 setCidr("");
-                setIsActive(false);
+                setdisabled(false);
                 setCreatedAt("");
                 setUpdatedAt("");
 

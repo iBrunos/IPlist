@@ -1,51 +1,37 @@
 [
   {
-    "ip": "40.124.170.249/34",
-    "description": "33eeee (por: admin)",
-    "isActive": false,
+    "ip": "##40.124.170.249/34",
+    "description": "33eeeesa (por: admin)",
+    "disabled": false,
     "createdAt": "2024-03-15T02:56:05.930Z",
-    "updatedAt": "2024-03-21T13:11:39.849Z"
+    "updatedAt": "2024-03-22T02:12:29.809Z"
   },
   {
     "ip": "52.158.213.44/22",
     "description": "t (por: admin)",
-    "isActive": false,
+    "disabled": false,
     "createdAt": "2024-03-15T12:02:21.208Z",
-    "updatedAt": "2024-03-15T14:47:19.113Z"
+    "updatedAt": "2024-03-22T02:06:30.927Z"
   },
   {
     "ip": "52.252.250.240/44",
     "description": "4 (por: admin)",
-    "isActive": false,
+    "disabled": false,
     "createdAt": "2024-03-15T12:03:54.724Z",
-    "updatedAt": "2024-03-15T14:47:20.920Z"
+    "updatedAt": "2024-03-22T02:01:39.719Z"
   },
   {
     "ip": "52.252.250.240/3",
     "description": "3 (por: admin)",
-    "isActive": false,
+    "disabled": false,
     "createdAt": "2024-03-15T12:04:56.966Z",
-    "updatedAt": "2024-03-15T14:47:22.723Z"
+    "updatedAt": "2024-03-22T02:03:49.079Z"
   },
   {
     "ip": "16.62.191.237/22",
     "description": "VAMOS NESSA (por: admin)",
-    "isActive": false,
+    "disabled": false,
     "createdAt": "2024-03-15T13:02:58.697Z",
-    "updatedAt": "2024-03-21T13:14:49.062Z"
-  },
-  {
-    "ip": "444.444.444.444/33",
-    "description": "SSS (por: admin)",
-    "isActive": false,
-    "createdAt": "2024-03-21T13:19:04.947Z",
-    "updatedAt": null
-  },
-  {
-    "ip": "666.666.666.666/22",
-    "description": "FELIPE (por: admin)",
-    "isActive": false,
-    "createdAt": "2024-03-21T13:40:17.671Z",
-    "updatedAt": null
+    "updatedAt": "2024-03-22T02:03:30.339Z"
   }
 ]

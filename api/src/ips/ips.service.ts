@@ -7,7 +7,7 @@ import * as Client from 'ssh2-sftp-client'; // Importe a biblioteca SFTP
 export interface Ip {
   ip: string;
   description: string;
-  isActive: boolean;
+  disabled: boolean;
   createdAt: string;
   updatedAt: string | null;
 }
@@ -28,7 +28,7 @@ export class IpsService {
     const newIp: Ip = {
       ip: createDto.ip.replace(/\\\\/g, '\\'),
       description: createDto.description,
-      isActive: createDto.isActive,
+      disabled: createDto.disabled,
       createdAt: new Date().toISOString(),
       updatedAt: null,
     };
@@ -40,17 +40,22 @@ export class IpsService {
   async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; updatedIp: Ip }> {
     const ips = await this.findAll();
     const index = ips.findIndex(item => item.ip === id);
+    
     if (index === -1) {
       throw new NotFoundException('Ip não encontrado');
     }
-    ips[index].ip = updatedIp.ip;
+    
+    ips[index].ip = updatedIp.disabled ? `#${updatedIp.ip}` : updatedIp.ip; // Adiciona ou remove '#' conforme o valor de 'disabled'
+    
     ips[index].description = updatedIp.description;
-    ips[index].isActive = updatedIp.isActive;
+    ips[index].disabled = updatedIp.disabled;
     ips[index].updatedAt = new Date().toISOString();
+    
     await this.writeFile(ips);
+    
     return { message: 'Ip atualizado com sucesso', updatedIp: ips[index] };
   }
-
+  
   async deleteById(id: string): Promise<{ message: string; deletedIp: Ip }> {
     const ips = await this.findAll();
     const index = ips.findIndex(item => item.ip === id);
@@ -85,8 +90,12 @@ export class IpsService {
         console.error('Erro ao escrever no arquivo JSON:', err);
       }
     });
-
-    const contentTXT = ips.map(ip => `${ip.ip} #${ip.description}`).join('\n');
+  
+    const contentTXT = ips.map(ip => {
+      const ipLine = ip.disabled ? ip.ip.replace(/^#/, '') : ip.ip;
+      return `${ipLine} #${ip.description}`;
+    }).join('\n');
+    
     return new Promise((resolve, reject) => {
       fs.writeFile(this.filePathData, contentTXT, async (err) => {
         if (err) {
@@ -98,6 +107,7 @@ export class IpsService {
       });
     });
   }
+  
 
   private async uploadFileViaSFTP(filePath: string): Promise<void> {
     const sftp = new Client();
