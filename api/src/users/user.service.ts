@@ -19,7 +19,33 @@ export class UserService {
     @InjectModel(User.name)
     private userModel: mongoose.Model<User>,
   ) { }
+  
+  async onModuleInit() {
+    await this.createAdminUserIfNotExists();
+  }
+  async createAdminUserIfNotExists(): Promise<void> {
+    try {
+      // Verifica se já existe um usuário administrador
+      const existingAdmin = await this.userModel.findOne({ isAdmin: true });
 
+      // Se não existir, cria um novo usuário administrador
+      if (!existingAdmin) {
+        const hashedPassword = await this.hashPassword('admin123'); // Defina uma senha segura para o usuário administrador
+
+        // Cria o usuário administrador
+        await this.userModel.create({
+          name: 'admin',
+          email: 'admin@example.com',
+          password: hashedPassword,
+          level: 'super_admin',
+        });
+
+        console.log('Usuário administrador criado com sucesso.');
+      }
+    } catch (error) {
+      console.error('Erro ao criar o usuário administrador:', error);
+    }
+  }
 
   async findAll(query: Query): Promise<User[]> {
     const resPerPage = 10;
@@ -107,7 +133,6 @@ export class UserService {
   async hashPassword(password: string): Promise<string> {
     try {
       const hashedPassword = await bcrypt.hash(password, 10);
-      console.log("hashedPassword: ",hashedPassword)
       return hashedPassword;
     } catch (error) {
       console.error('Erro ao gerar hash de senha:', error);

@@ -2,7 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateDto } from './dto/create-ips.dto';
 import { UpdateDto } from './dto/update-ips.dto';
 import * as fs from 'fs';
-import * as Client from 'ssh2-sftp-client'; // Importe a biblioteca SFTP
+import * as Client from 'ssh2-sftp-client';
 
 export interface Ip {
   ip: string;
@@ -45,11 +45,11 @@ export class IpsService {
       throw new NotFoundException('Ip não encontrado');
     }
     
-    ips[index].ip = updatedIp.disabled ? `#${updatedIp.ip}` : updatedIp.ip; // Adiciona ou remove '#' conforme o valor de 'disabled'
-    
     ips[index].description = updatedIp.description;
     ips[index].disabled = updatedIp.disabled;
     ips[index].updatedAt = new Date().toISOString();
+  
+    // Não é necessário adicionar ou remover '#' aqui, pois a lógica está na função writeFile
     
     await this.writeFile(ips);
     
@@ -92,10 +92,17 @@ export class IpsService {
     });
   
     const contentTXT = ips.map(ip => {
-      const ipLine = ip.disabled ? ip.ip.replace(/^#/, '') : ip.ip;
+      let ipLine = ip.ip;
+      if (ip.disabled) {
+        // Adiciona '#' somente se não estiver presente no início do IP
+        ipLine = ipLine.startsWith('#') ? ipLine : `#${ipLine}`;
+      } else {
+        // Remove '#' somente se estiver presente no início do IP
+        ipLine = ipLine.startsWith('#') ? ipLine.slice(1) : ipLine;
+      }
       return `${ipLine} #${ip.description}`;
     }).join('\n');
-    
+  
     return new Promise((resolve, reject) => {
       fs.writeFile(this.filePathData, contentTXT, async (err) => {
         if (err) {

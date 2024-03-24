@@ -21,44 +21,37 @@ const FormIpCreate: React.FC<{
     const [createdAt, setCreatedAt] = useState<string>("");
     const [updatedAt, setUpdatedAt] = useState<string>("");
     const [user, setUser] = useState<string>("");
-
+    const [showModal, setShowModal] = useState<boolean>(false);
 
     const handleChangeCidr = (e: ChangeEvent<HTMLInputElement>): void => {
         const { value } = e.target;
-    
-        // Verifica se o valor inserido é um número
         if (!isNaN(Number(value))) {
-          setCidr(value);
+            setCidr(value);
         }
-      };
+    };
+
     const handleChange = (e: ChangeEvent<HTMLInputElement>): void => {
         const value: string = e.target.value;
-        // Remove todos os caracteres que não são números, pontos ou barras
         const formattedValue: string = value.replace(/[^\d./]/g, '');
-
-        // Dividir a string em partes separadas por ponto ou barra
         const parts: string[] = formattedValue.split(/\.|\//);
-
-        // Reformatar para garantir que haja no máximo 4 partes separadas por pontos ou barras
         const formattedIp: string = parts
-            .slice(0, 4) // Permitir apenas 4 partes
-            .map((part: string) => part.slice(0, 3)) // Limitar cada parte a 3 caracteres
-            .join('.') // Juntar as partes com ponto
-            .replace(/\.+/g, '.'); // Remover pontos extras
+            .slice(0, 4)
+            .map((part: string) => part.slice(0, 3))
+            .join('.')
+            .replace(/\.+/g, '.');
 
         setIp(formattedIp);
     };
+
     const inputRef = useRef<HTMLInputElement>(null);
 
     useEffect(() => {
-        // Verifica se inputRef.current não é null antes de chamar o método focus()
         if (inputRef.current !== null) {
-          inputRef.current.focus();
+            inputRef.current.focus();
         }
-      }, []);
+    }, []);
 
     useEffect(() => {
-        // Preencher automaticamente a descrição com o valor do localStorage para o campo user
         const storedUser = localStorage.getItem('user');
         if (storedUser) {
             setUser(storedUser);
@@ -67,11 +60,22 @@ const FormIpCreate: React.FC<{
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
+        // Verifica se o IP é 0.0.0.0/0
+        if (ip === "0.0.0.0" && cidr === "0") {
+            toast.error("Você não pode adicionar o 0.0.0.0/0");
+            setIp("");
+            setDescription("");
+            setCidr("");
+            setdisabled(false);
+            setCreatedAt("");
+            setUpdatedAt("");
+            setShowModal(true); // Exibe o modal
+            return; // Interrompe a execução do restante da função
+        }
         try {
-            // Preencher as datas automaticamente
             const currentDate = new Date();
-            const formattedCreatedAt = currentDate.toISOString(); // Formato ISO 8601
-            const formattedUpdatedAt = currentDate.toISOString(); // Formato ISO 8601
+            const formattedCreatedAt = currentDate.toISOString();
+            const formattedUpdatedAt = currentDate.toISOString();
 
             const requestBody = {
                 ip: cidr ? `${ip}/${cidr}` : ip,
@@ -79,8 +83,8 @@ const FormIpCreate: React.FC<{
                 disabled,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
-              };
-            
+            };
+
             const response = await fetch('http://localhost:3001/ips/create', {
                 method: 'POST',
                 headers: {
@@ -88,7 +92,6 @@ const FormIpCreate: React.FC<{
                 },
                 body: JSON.stringify(requestBody),
             });
-
 
             if (response.ok) {
                 const data = await response.json();
@@ -110,6 +113,16 @@ const FormIpCreate: React.FC<{
             console.error('Erro de rede:', error);
             toast.error("Erro de rede ao adicionar o Ip!");
         }
+    };
+
+    const confirmDelete = () => {
+        setShowModal(false);
+        // Aqui você pode adicionar qualquer ação que deseja realizar após a confirmação.
+    };
+
+    const cancelDelete = () => {
+        setShowModal(false);
+        // Aqui você pode adicionar qualquer ação que deseja realizar após o cancelamento.
     };
 
     return (
@@ -197,3 +210,4 @@ const FormIpCreate: React.FC<{
 };
 
 export default FormIpCreate;
+

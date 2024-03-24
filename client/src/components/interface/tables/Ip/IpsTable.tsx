@@ -136,50 +136,38 @@ const IpsTable: React.FC = () => {
 
   const handleToggleChange = async (ip: Ip) => {
     try {
-        const updatedIp = { ...ip, disabled: !ip.disabled }; // Alterna o estado de disabled
-        const response = await fetch(`http://localhost:3001/ips/${encodeURIComponent(ip.ip)}`, {
-            method: 'PUT',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(updatedIp),
-        });
-
-        if (response.ok) {
-            const updatedIps = ips.map((ipItem) => {
-                if (ipItem.ip === ip.ip) {
-                    const previousDescription = ipItem.description;
-                    const description = previousDescription.includes('(por:') ? previousDescription.split('(por:')[0].trim() : previousDescription;
-                    const updatedDescription = `${description} (por: ${user})`;
-                    const updatedIpItem = { ...ipItem, disabled: !ip.disabled, updatedAt: new Date().toISOString(), description: updatedDescription };
-                    // Remove '#' do início do IP se disabled for false
-                    if (!updatedIpItem.disabled && updatedIpItem.ip.startsWith('#')) {
-                        updatedIpItem.ip = updatedIpItem.ip.slice(1); // Remove o primeiro caractere, que é '#'
-                    }
-                    return updatedIpItem;
-                } else {
-                    return ipItem;
-                }
-            });
-            setIps(updatedIps);
-            toast.success(`IP ${updatedIp.disabled ? 'ativado' : 'desativado'} com sucesso!`);
-            fetch("http://localhost:3001/ips")
-            .then((response) => response.json())
-            .then((data) => {
-              setIps(data);
-            })
-            .catch((error) => console.error("Erro ao buscar ips:", error));
-        } else {
-            console.error('Erro ao alterar o estado do IP:', response.statusText);
-            toast.error('Erro ao alterar o estado do IP!');
-        }
+      const updatedIp = { 
+        ...ip, 
+        disabled: !ip.disabled,
+        updatedAt: new Date().toISOString() // Garante que updatedAt seja uma string no formato de data
+      }; 
+  
+      const response = await fetch(`http://localhost:3001/ips/${encodeURIComponent(ip.ip)}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedIp),
+      });
+  
+      if (response.ok) {
+        // Atualiza o estado local apenas se a requisição for bem-sucedida
+        const updatedIps = ips.map(ipItem =>
+          ipItem.ip === updatedIp.ip ? updatedIp : ipItem,
+        );
+        setIps(updatedIps);
+        toast.success(`IP ${updatedIp.disabled ? 'ativado' : 'desativado'} com sucesso!`);
+      } else {
+        console.error('Erro ao alterar o estado do IP:', response.statusText);
+        toast.error('Erro ao alterar o estado do IP!');
+      }
     } catch (error) {
-        console.error('Erro de rede:', error);
-        toast.error('Erro de rede ao alterar o estado do IP!');
+      console.error('Erro de rede:', error);
+      toast.error('Erro de rede ao alterar o estado do IP!');
     }
-};
-
-
+  };
+  
+  
   return (
     <>
       <ToastContainer />
@@ -393,6 +381,6 @@ const IpsTable: React.FC = () => {
       )}
     </>
   );
-};
+}
 
 export default IpsTable;

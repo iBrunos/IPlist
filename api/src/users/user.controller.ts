@@ -4,7 +4,6 @@ import {
   Delete,
   Get,
   Param,
-  Patch,
   Post,
   Put,
   Query,
@@ -66,7 +65,7 @@ export class UsersController {
   }
 
   @Put('/:id')
-  async updateUsers(
+  async updateUser(
     @Param('id') id: mongoose.Types.ObjectId,
     @Body() user: UpdateUsersDto,
   ): Promise<{ message: string }> {

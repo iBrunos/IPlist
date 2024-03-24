@@ -14,7 +14,7 @@ import { IpsModule } from './ips/ips.module'; // Importe o módulo de IPs
     }),
     MongooseModule.forRoot(process.env.DB_URI), // Mantenha a conexão global com o MongoDB
     UserModule,
-    IpsModule, // Importe o módulo de IPs aqui
+    IpsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

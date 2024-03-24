@@ -1,5 +1,1 @@
-##40.124.170.249/34 #33eeeesa (por: admin)
-52.158.213.44/22 #t (por: admin)
-52.252.250.240/44 #4 (por: admin)
-52.252.250.240/3 #3 (por: admin)
-16.62.191.237/22 #VAMOS NESSA (por: admin)
+1.1.1.156/22 #terste (por: admin)

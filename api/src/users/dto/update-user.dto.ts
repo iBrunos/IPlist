@@ -1,5 +1,5 @@
-import { IsBoolean, IsString, IsOptional, ValidateNested, IsArray } from 'class-validator';
-import { Type } from 'class-transformer';
+import { IsString, IsOptional, IsEnum } from 'class-validator';
+import { UserRole } from './create-user.dto'; 
 
 export class UpdateUsersDto {
 
@@ -14,4 +14,13 @@ export class UpdateUsersDto {
   @IsOptional()
   @IsString()
   password: string;
+
+  @IsOptional()
+  @IsString()
+  @IsEnum(UserRole, { message: 'Invalid user role' }) // Garante que o valor seja um dos valores do enum UserRole
+  level: string; // Atualizado para ser uma string
+
+  @IsOptional()
+  @IsString()
+  updatedAt: string;
 }

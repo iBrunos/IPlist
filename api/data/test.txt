@@ -1,37 +1,9 @@
 [
   {
-    "ip": "##40.124.170.249/34",
-    "description": "33eeeesa (por: admin)",
+    "ip": "1.1.1.156/22",
+    "description": "terste (por: admin)",
     "disabled": false,
-    "createdAt": "2024-03-15T02:56:05.930Z",
-    "updatedAt": "2024-03-22T02:12:29.809Z"
-  },
-  {
-    "ip": "52.158.213.44/22",
-    "description": "t (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-15T12:02:21.208Z",
-    "updatedAt": "2024-03-22T02:06:30.927Z"
-  },
-  {
-    "ip": "52.252.250.240/44",
-    "description": "4 (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-15T12:03:54.724Z",
-    "updatedAt": "2024-03-22T02:01:39.719Z"
-  },
-  {
-    "ip": "52.252.250.240/3",
-    "description": "3 (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-15T12:04:56.966Z",
-    "updatedAt": "2024-03-22T02:03:49.079Z"
-  },
-  {
-    "ip": "16.62.191.237/22",
-    "description": "VAMOS NESSA (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-15T13:02:58.697Z",
-    "updatedAt": "2024-03-22T02:03:30.339Z"
+    "createdAt": "2024-03-23T22:23:36.743Z",
+    "updatedAt": "2024-03-24T03:21:23.744Z"
   }
 ]

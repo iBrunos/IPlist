@@ -14,5 +14,5 @@ export class UpdateDto {
   readonly createdAt: string;
 
   @IsString()
-  readonly updatedAt: string;
+  updatedAt: string;
 }
