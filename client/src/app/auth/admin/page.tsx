@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import HeaderAdmin from '@/components/layout/HeaderAdmin';
 
-export default function Magic() {
+export default function Admin() {
 
   const [permission, setPermission] = useState<string>("");
   const router = useRouter();

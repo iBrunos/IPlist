@@ -1,6 +1,7 @@
 "use client";
 import Image from "next/image";
 import logoCogel from "../../../../../public/assets/logo_cogel.png";
+import Cookies from "../../cards/cookies/Cookies"
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaRegEye } from "react-icons/fa6";
@@ -61,15 +62,15 @@ const LoginForm: React.FC = () => {
 
       if (data.message === "Login successful") {
         // Use cookies to store the token and user info
-        const encryptedToken = CryptoJS.AES.encrypt(data.token, 'yourSecretKey').toString();
+        const encryptedToken = CryptoJS.AES.encrypt(data.token, 'cogel').toString();
         document.cookie = "token=" + encryptedToken + "; path=/;";
-        
-        const encryptedPermission = CryptoJS.AES.encrypt(data.user._doc.permission, 'yourSecretKey').toString();
+
+        const encryptedPermission = CryptoJS.AES.encrypt(data.user._doc.permission, 'cogel').toString();
         document.cookie = "permission=" + encryptedPermission + "; path=/;";
-        
-        const encryptedUserName = CryptoJS.AES.encrypt(data.user._doc.name, 'yourSecretKey').toString();
+
+        const encryptedUserName = CryptoJS.AES.encrypt(data.user._doc.name, 'cogel').toString();
         document.cookie = "userName=" + encryptedUserName + "; path=/;";
-        
+
         // Redirect to the desired page
         router.push("/auth/admin/ips");
       } else {
@@ -87,7 +88,7 @@ const LoginForm: React.FC = () => {
       <div className=" bg-white dark:bg-[#101010]">
         <div className=" flex justify-center h-screen w-screen">
           <Image
-            className="relative hidden bg-cover lg:block xl:block"
+            className="relative hidden bg-cover 2xl:block "
             src={bg}
             alt=""
             width={1400}
@@ -240,6 +241,7 @@ const LoginForm: React.FC = () => {
           </div>
         </div>
       </div>
+      <Cookies/>
     </>
   );
 };

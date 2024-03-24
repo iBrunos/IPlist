@@ -3,6 +3,8 @@ import UserTable from '../../../../components/interface/tables/User/UserTable';
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import HeaderAdmin from '@/components/layout/HeaderAdmin';
+import HeaderUser from '@/components/layout/HeaderUser';
+import CryptoJS from 'crypto-js';
 
 export default function User() {
 
@@ -12,29 +14,34 @@ export default function User() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const cookies = document.cookie.split(';').map(cookie => cookie.trim().split('='));
-      const tokenCookie = cookies.find(cookie => cookie[0] === 'token');
       const permissionCookie = cookies.find(cookie => cookie[0] === 'permission');
-
       // Verifique se o token e a permissão existem antes de definir o papel do usuário
-      if (!tokenCookie) {
+      if (!permissionCookie) {
         window.alert("Você precisa fazer login para acessar essa página!");
-        // Redirecione para a página de autenticação se não houver token ou permissão
+        // Redirecione para a página de autenticação se não houver permissão
         router.push('/auth');
-      } else if (permissionCookie) {
-        setPermission(permissionCookie[1]);
+      } else {
+        // Descriptografar a permissão
+        const decryptedPermission = CryptoJS.AES.decrypt(permissionCookie[1], 'cogel').toString(CryptoJS.enc.Utf8);
+        setPermission(decryptedPermission);
       }
     }
   }, []); // Empty dependency array ensures this useEffect runs only once after the initial render
-  // Don't render anything if the user doesn't have permission
-  if (!permission) {
-    return null;
-  }
 
-
+  // Renderizar o componente HeaderAdmin ou HeaderUser dependendo da permissão
+  const renderHeader = () => {
+    if (permission === 'super_admin') {
+      return <HeaderAdmin />;
+    } else {
+      return <HeaderUser />;
+    }
+  };
   return (
     <>
-      <HeaderAdmin /> 
-      <UserTable />
+      <main className="bg-gradient-to-t from-gray-200 via-gray-300 h-full to-gray-300">
+        {renderHeader()}
+        <UserTable />
+      </main>
     </>
   );
 }

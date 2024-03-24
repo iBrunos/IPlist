@@ -4,28 +4,18 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import logo from "../../../public/assets/logo_cogel.png"
 import { useState } from "react";
-import { VscTriangleDown } from 'react-icons/vsc'
 import { useRouter } from "next/navigation";
-import { IoMdPeople } from "react-icons/io";
 import { IoExit } from "react-icons/io5";
 import { FaLocationPinLock } from "react-icons/fa6";
-import { IoMdSettings } from "react-icons/io";
-import { FaClipboardList } from "react-icons/fa";
 
-const HeaderAdmin: React.FC = () => {
+const HeaderUser: React.FC = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
   const router = useRouter();
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
-  const toggleDropdown = () => {
-    setIsOpen(!isOpen);
-  };
-  const closeDropdown = () => {
-    setIsOpen(false);
-  };
+
   const navigateToLogout = () => {
     // Remove os cookies
     document.cookie = "permission=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
@@ -103,37 +93,6 @@ const HeaderAdmin: React.FC = () => {
                 >
                   <FaLocationPinLock />IP's
                 </Link>
-
-                <section className="relative">
-                  <button
-                    className="px-3 py-2 mx-3 mt-2 flex gap-2 items-center transition-colors duration-300 transform rounded-md lg:mt-0 hover:bg-gray-100 dark:hover-bg-gray-700"
-                    onClick={toggleDropdown}
-                  >
-                    <IoMdSettings />Configurações <VscTriangleDown />
-                  </button>
-                  {isOpen && (
-                    <Link
-                      className="rounded border-[1px] border-gray-300 bg-white absolute left-[12px] top-[50px] w-[300px] shadow-md"
-                      href="/auth/admin/users"
-                      onClick={closeDropdown}
-                    >
-                      <Link className={`flex gap-2 cursor-pointer items-center hover:bg-gray-300 p-4 ${pathname === "/auth/admin/users" ? "text-green-500" : ""
-                        }`}
-                        href="/auth/admin/users"
-                      >
-                        <IoMdPeople />Usuários
-                      </Link>
-
-                      <Link className={`flex gap-2 cursor-pointer items-center hover:bg-gray-300 p-4 ${pathname === "/auth/admin/users" ? "text-green-500" : ""
-                        }`}
-                        href="/auth/admin/users"
-                      >
-                        <FaClipboardList />Logs de Eventos
-                      </Link>
-                      
-                    </Link>
-                  )}
-                </section>
                 <button
                   onClick={navigateToLogout}
                   title="Sair"
@@ -151,4 +110,4 @@ const HeaderAdmin: React.FC = () => {
   );
 };
 
-export default HeaderAdmin;
+export default HeaderUser;
