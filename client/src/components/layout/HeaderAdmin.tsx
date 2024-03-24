@@ -27,9 +27,8 @@ const HeaderAdmin: React.FC = () => {
   };
   const navigateToLogout = () => {
     localStorage.removeItem("permission");
-    localStorage.removeItem("sessionInfo");
-    localStorage.removeItem("user");
-
+    localStorage.removeItem("token");
+    localStorage.removeItem("username");
     router.push("/auth");
   };
   return (

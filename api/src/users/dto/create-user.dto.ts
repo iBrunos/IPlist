@@ -23,5 +23,5 @@ export class CreateUsersDto {
   @IsNotEmpty()
   @IsString()
   @IsEnum(UserRole) // Garante que o valor seja um dos valores do enum UserRole
-  level: UserRole; // Usa o enum UserRole como tipo para o campo level
+  permission: UserRole; // Usa o enum UserRole como tipo para o campo permission
 }

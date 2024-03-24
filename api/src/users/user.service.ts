@@ -23,6 +23,7 @@ export class UserService {
   async onModuleInit() {
     await this.createAdminUserIfNotExists();
   }
+
   async createAdminUserIfNotExists(): Promise<void> {
     try {
       // Verifica se já existe um usuário administrador
@@ -37,13 +38,14 @@ export class UserService {
           name: 'admin',
           email: 'admin@example.com',
           password: hashedPassword,
-          level: 'super_admin',
+          permission: 'super_admin',
+          isAdmin: true, // Marca o usuário como administrador
         });
 
         console.log('Usuário administrador criado com sucesso.');
       }
     } catch (error) {
-      console.error('Erro ao criar o usuário administrador:', error);
+      console.error('O Usuário administrador já existe.');
     }
   }
 

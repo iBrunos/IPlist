@@ -18,7 +18,7 @@ export class UpdateUsersDto {
   @IsOptional()
   @IsString()
   @IsEnum(UserRole, { message: 'Invalid user role' }) // Garante que o valor seja um dos valores do enum UserRole
-  level: string; // Atualizado para ser uma string
+  permission: string; // Atualizado para ser uma string
 
   @IsOptional()
   @IsString()

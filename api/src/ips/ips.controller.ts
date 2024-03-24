@@ -10,12 +10,12 @@ export class IpsController {
 
   @Get()
   async getAllIps(): Promise<any[]> {
-    return this.ipsService.findAll(); // Você precisará implementar este método no serviço
+    return this.ipsService.findAll();
   }
 
   @Post('/create')
   async create(@Body() createDto: CreateDto): Promise<{ message: string }> {
-    return this.ipsService.create(createDto); // Você precisará implementar este método no serviço
+    return this.ipsService.create(createDto);
   }
 
   @Put('/:ip')
@@ -28,6 +28,6 @@ export class IpsController {
 
   @Delete('/:ip')
   async deleteIp(@Param('ip') id: string): Promise<{ message: string }> {
-    return this.ipsService.deleteById(id); // Você precisará implementar este método no serviço
+    return this.ipsService.deleteById(id);
   }
 }

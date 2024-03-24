@@ -1,13 +1,12 @@
 "use client";
 import Image from "next/image";
-import suaLogoAqui from "../../../../../public/assets/logo_cogel.png";
-import sxLogo from "../../../../../public/assets/SX.png"
+import logoCogel from "../../../../../public/assets/logo_cogel.png";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { FaRegEye } from "react-icons/fa6";
 import { FaRegEyeSlash } from "react-icons/fa";
 import bg from "../../../../../public/assets/bg_vpn.png";
-
+import CryptoJS from "crypto-js";
 
 const LoginForm: React.FC = () => {
   const bgImage = "assets/bg-login2.jpg";
@@ -30,11 +29,14 @@ const LoginForm: React.FC = () => {
   const handleBotaoClick = () => {
     abrirModal();
   };
+
+
   const handleRememberMe = () => {
     setRememberMe(!rememberMe);
     if (!rememberMe) {
       const credentials = { username, password };
-      localStorage.setItem("credentials", JSON.stringify(credentials));
+      const encryptedCredentials = CryptoJS.AES.encrypt(JSON.stringify(credentials), 'yourSecretKey').toString();
+      localStorage.setItem("credentials", encryptedCredentials);
     } else {
       localStorage.removeItem("credentials");
     }
@@ -45,7 +47,7 @@ const LoginForm: React.FC = () => {
     const newItem = { username, password };
     try {
       const response = await fetch(
-        "https://sunx-api-agendamento.vercel.app/employees/login",
+        "http://localhost:3001/users/login",
         {
           method: 'POST',
           headers: {
@@ -58,12 +60,16 @@ const LoginForm: React.FC = () => {
       const data = await response.json();
 
       if (data.message === "Login successful") {
-        // Use localStorage to store the token and role
-        localStorage.setItem('permission', data.employee._doc.role);
-        localStorage.setItem('user', data.employee._doc.name);
-        localStorage.setItem('sessionInfo', data.token);
-
-
+        // Use cookies to store the token and user info
+        const encryptedToken = CryptoJS.AES.encrypt(data.token, 'yourSecretKey').toString();
+        document.cookie = "token=" + encryptedToken + "; path=/;";
+        
+        const encryptedPermission = CryptoJS.AES.encrypt(data.user._doc.permission, 'yourSecretKey').toString();
+        document.cookie = "permission=" + encryptedPermission + "; path=/;";
+        
+        const encryptedUserName = CryptoJS.AES.encrypt(data.user._doc.name, 'yourSecretKey').toString();
+        document.cookie = "userName=" + encryptedUserName + "; path=/;";
+        
         // Redirect to the desired page
         router.push("/auth/admin/ips");
       } else {
@@ -93,14 +99,14 @@ const LoginForm: React.FC = () => {
               COGEL
             </h2>
             <p className="absolute left-[5%] top-[8%] max-w-xl mt-3 text-white">
-            Seja bem-vindo! Ao sistema de IPS
+              Seja bem-vindo! Ao sistema de IPS
             </p>
           </div>
           <div className="flex items-center w-full max-w-md px-6 mx-auto ">
             <div className="flex-1">
               <div className="text-center">
                 <div className="flex justify-center mx-auto">
-                  <Image className="w-40" src={suaLogoAqui} alt="" />
+                  <Image className="w-40" src={logoCogel} alt="" />
                 </div>
 
                 <p className="mt-3 text-black">
@@ -129,7 +135,7 @@ const LoginForm: React.FC = () => {
                       required
                       placeholder="usuário"
                       className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-[#205aa7] rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
-                      />
+                    />
                   </div>
                   <div className="mt-6">
                     <div className="flex justify-between mb-2">
@@ -225,7 +231,7 @@ const LoginForm: React.FC = () => {
                       type="submit"
                       className="w-full px-4 py-2 tracking-wide text-white transition-colors duration-300 transform bg-[#205aa7] rounded-lg hover:bg-[#4d7bb9] focus:outline-none focus:bg-gray-400 focus:ring focus:ring-gray-300 focus:ring-opacity-50"
                     >
-                     Entrar
+                      Entrar
                     </button>
                   </div>
                 </form>

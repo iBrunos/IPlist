@@ -7,7 +7,7 @@ export class User {
   @Prop()
   name: string;
 
-  @Prop()
+  @Prop({ unique: true })
   email: string;
 
   @Prop()
@@ -17,7 +17,7 @@ export class User {
   updatedAt: string;
 
   @Prop()
-  level: string;
+  permission: string;
 }
 
 export const UsersSchema = SchemaFactory.createForClass(User);
