@@ -19,8 +19,10 @@ const FormUserCreate: React.FC<{
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
+  const [permission, setPermisson] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
-
+  const [showPermission, setShowPermission] = useState(false);
+  
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -34,7 +36,7 @@ const FormUserCreate: React.FC<{
         toast.error("A senha deve ter pelo menos 8 caracteres e conter pelo menos uma letra maiúscula.");
         return;
       }
-      const response = await fetch('https://sunx-api-agendamento.vercel.app/users/create', {
+      const response = await fetch('http://localhost:3001/users/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -59,7 +61,15 @@ const FormUserCreate: React.FC<{
       toast.error("Erro de rede ao adicionar o usuário!");
     }
   };
-
+  const generateRandomPassword = () => {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-+=?";
+    let password = "";
+    for (let i = 0; i < 12; i++) {
+        const randomIndex = Math.floor(Math.random() * charset.length);
+        password += charset[randomIndex];
+    }
+    setPassword(password);
+  };
   return (
     <>
       <ToastContainer />
@@ -120,6 +130,15 @@ const FormUserCreate: React.FC<{
                   </button>
                 </div>
               </div>
+              <div className="flex justify-end items-end mt-4">
+              <button 
+                type="button" 
+                className="px-8 py-2.5 font-semibold leading-5 rounded-xl text-white transition-colors duration-300 transform bg-gray-700 hover:bg-gray-600 focus:outline-none focus:bg-gray-600 mr-2"
+                onClick={() => generateRandomPassword()}
+              >
+                Gerar Senha Aleatória
+              </button>
+              </div>
               <div>
                 <label
                   className="text-gray-700 dark:text-gray-200"
@@ -135,6 +154,23 @@ const FormUserCreate: React.FC<{
                   className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
                   required
                 />
+              </div>
+              <div>
+                <label className="text-gray-700 dark:text-gray-200" htmlFor="endTimePause">
+                  Permissão
+                </label>
+                <select
+                  id="permission"
+                  className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
+                  onChange={(e) => setPermisson(e.target.value)}
+                  value={permission}
+                  required
+                >
+                  <option value="">Selecione um horário</option>
+                  <option value="super_admin">super_admin</option>
+                  <option value="user">user</option>
+                  <option value="reading">reading</option>
+                </select>
               </div>
             </div>
             <div className="flex justify-end items-end mt-4">

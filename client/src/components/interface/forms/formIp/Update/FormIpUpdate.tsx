@@ -27,7 +27,6 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
     const [disabled, setdisabled] = useState<boolean>(ipData ? ipData.disabled : true);
     const [createdAt, setCreatedAt] = useState<string>(ipData ? ipData.createdAt : "");
     const [updatedAt, setUpdatedAt] = useState<string>(ipData ? ipData.updatedAt : "");
-    const [user, setUser] = useState<string>(localStorage.getItem('user') || ''); // Obter o nome do usuário do localStorage
     const formRef = useRef<HTMLDivElement | null>(null);
 
     const handleClose = () => {
@@ -58,10 +57,19 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
             const currentDate = new Date();
             const formattedCreatedAt = currentDate.toISOString(); // Formato ISO 8601
             const formattedUpdatedAt = currentDate.toISOString(); // Formato ISO 8601
+            // Ler o valor de username dos cookies
+            const cookies = document.cookie.split(';');
+            let username = '';
+            cookies.forEach(cookie => {
+                const [key, value] = cookie.split('=');
+                if (key.trim() === 'userName') {
+                    username = value;
 
+                }
+            });
             const updatedIp = {
                 ip,
-                description: `${description} (por: ${user})`,
+                description: `${description} (por: ${username})`,
                 disabled,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
@@ -123,7 +131,7 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
                                     type="text"
                                     value={ip}
                                     required
-                                    onChange={(e) => {setIp(e.target.value);}}
+                                    onChange={(e) => { setIp(e.target.value); }}
                                     className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
                                 />
                             </div>

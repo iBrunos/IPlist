@@ -51,13 +51,6 @@ const FormIpCreate: React.FC<{
         }
     }, []);
 
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(storedUser);
-        }
-    }, []);
-
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         // Verifica se o IP é 0.0.0.0/0
@@ -72,19 +65,31 @@ const FormIpCreate: React.FC<{
             setShowModal(true); // Exibe o modal
             return; // Interrompe a execução do restante da função
         }
+    
         try {
+            // Ler o valor de username dos cookies
+            const cookies = document.cookie.split(';');
+            let username = '';
+            cookies.forEach(cookie => {
+                const [key, value] = cookie.split('=');
+                if (key.trim() === 'userName') {
+                    username = value;
+                   
+                }
+            });
+            console.log("userName: ",username)
             const currentDate = new Date();
             const formattedCreatedAt = currentDate.toISOString();
             const formattedUpdatedAt = currentDate.toISOString();
-
+    
             const requestBody = {
                 ip: cidr ? `${ip}/${cidr}` : ip,
-                description: `${description} (por: ${user})`,
+                description: `${description} (por: ${username})`, // Adicionando username à descrição
                 disabled,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
             };
-
+    
             const response = await fetch('http://localhost:3001/ips/create', {
                 method: 'POST',
                 headers: {
@@ -92,18 +97,18 @@ const FormIpCreate: React.FC<{
                 },
                 body: JSON.stringify(requestBody),
             });
-
+    
             if (response.ok) {
                 const data = await response.json();
                 onIpCreated(data);
-
+    
                 setIp("");
                 setDescription("");
                 setCidr("");
                 setdisabled(false);
                 setCreatedAt("");
                 setUpdatedAt("");
-
+    
                 toast.success("O Ip foi adicionado!");
             } else {
                 console.error('Erro ao criar o Ip:', response.statusText);
@@ -114,6 +119,7 @@ const FormIpCreate: React.FC<{
             toast.error("Erro de rede ao adicionar o Ip!");
         }
     };
+    
 
     const confirmDelete = () => {
         setShowModal(false);
@@ -171,7 +177,7 @@ const FormIpCreate: React.FC<{
                                     className="text-gray-700 dark:text-gray-200"
                                     htmlFor="username"
                                 >
-                                    &nbsp;
+                                    Cidr
                                 </label>
                                 <input
                                     id="ip"

@@ -5,7 +5,7 @@ export class UpdateDto {
   readonly ip: string;
 
   @IsString()
-  readonly description: string;
+  description: string;
   
   @IsBoolean()
   readonly disabled: boolean;
