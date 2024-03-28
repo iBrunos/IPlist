@@ -73,6 +73,7 @@ export class UserService {
       name,
       email,
       password, // Adicionando password aqui
+      permission
     } = createDto;
 
     try {
@@ -83,6 +84,7 @@ export class UserService {
         name,
         email,
         password: hashedPassword, // Incluindo a senha hash no documento
+        permission
       });
 
       return { message: 'User created successfully', createdUser };
@@ -104,21 +106,29 @@ export class UserService {
     }
     return user;
   }
-
   async updateById(id: mongoose.Types.ObjectId, user: User): Promise<{ message: string, updatedUser: User | null }> {
     try {
+      // Verificar se o campo password está presente e não vazio
+      if (user.password === undefined || user.password.trim() === '') {
+        // Se estiver vazio, remover o campo password do objeto user
+        delete user.password;
+      }
+  
       const updatedUser = await this.userModel.findByIdAndUpdate(id, user, {
         new: true,
         runValidators: true,
       });
+  
       if (!updatedUser) {
         throw new Error('User not found');
       }
+      
       return { message: 'User updated successfully', updatedUser };
     } catch (error) {
       throw new Error('Failed to update user'); // Personalize a mensagem de erro conforme necessário
     }
   }
+  
 
   async deleteById(id: mongoose.Types.ObjectId): Promise<{ message: string, deletedUser: User | null }> {
     try {

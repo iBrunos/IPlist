@@ -4,12 +4,14 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaRegEye } from "react-icons/fa6";
 import { FaRegEyeSlash } from "react-icons/fa";
+import { IoKeySharp } from "react-icons/io5";
 
 interface User {
   _id: string;
   name: string;
   email: string;
   password: string;
+  permission: string;
 }
 
 const FormUserCreate: React.FC<{
@@ -22,7 +24,7 @@ const FormUserCreate: React.FC<{
   const [permission, setPermisson] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
   const [showPermission, setShowPermission] = useState(false);
-  
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
@@ -30,7 +32,8 @@ const FormUserCreate: React.FC<{
       const requestBody = {
         name,
         password,
-        email
+        email,
+        permission
       };
       if (password.length < 8 || !/[A-Z]/.test(password)) {
         toast.error("A senha deve ter pelo menos 8 caracteres e conter pelo menos uma letra maiúscula.");
@@ -51,6 +54,7 @@ const FormUserCreate: React.FC<{
         setName("");
         setEmail("");
         setPassword("");
+        setPermisson("");
         toast.success("O usuário foi adicionado!");
       } else {
         console.error('Erro ao criar o usuário:', response.statusText);
@@ -65,8 +69,8 @@ const FormUserCreate: React.FC<{
     const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-+=?";
     let password = "";
     for (let i = 0; i < 12; i++) {
-        const randomIndex = Math.floor(Math.random() * charset.length);
-        password += charset[randomIndex];
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
     }
     setPassword(password);
   };
@@ -89,7 +93,6 @@ const FormUserCreate: React.FC<{
               </button>
             </div>
           </div>
-
           <form className="" onSubmit={handleSubmit}>
             <div className="grid grid-cols-1 gap-6 mt-4 sm:grid-cols-2">
               <div>
@@ -105,7 +108,7 @@ const FormUserCreate: React.FC<{
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
-                  required               
+                  required
                 />
               </div>
               <div>
@@ -128,16 +131,8 @@ const FormUserCreate: React.FC<{
                   >
                     {showPassword ? <FaRegEye /> : <FaRegEyeSlash />}
                   </button>
+
                 </div>
-              </div>
-              <div className="flex justify-end items-end mt-4">
-              <button 
-                type="button" 
-                className="px-8 py-2.5 font-semibold leading-5 rounded-xl text-white transition-colors duration-300 transform bg-gray-700 hover:bg-gray-600 focus:outline-none focus:bg-gray-600 mr-2"
-                onClick={() => generateRandomPassword()}
-              >
-                Gerar Senha Aleatória
-              </button>
               </div>
               <div>
                 <label
@@ -147,7 +142,7 @@ const FormUserCreate: React.FC<{
                   Email
                 </label>
                 <input
-                  id="name"
+                  id="emailCreate"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
@@ -166,7 +161,7 @@ const FormUserCreate: React.FC<{
                   value={permission}
                   required
                 >
-                  <option value="">Selecione um horário</option>
+                  <option value="">Selecione a permissão</option>
                   <option value="super_admin">super_admin</option>
                   <option value="user">user</option>
                   <option value="reading">reading</option>
@@ -174,9 +169,20 @@ const FormUserCreate: React.FC<{
               </div>
             </div>
             <div className="flex justify-end items-end mt-4">
+              <button
+                type="button"
+                className="px-8 py-2.5 font-semibold leading-5 rounded-xl text-white transition-colors duration-300 transform bg-gray-700 hover:bg-gray-600 focus:outline-none focus:bg-gray-600 mr-2"
+                onClick={() => generateRandomPassword()}
+                title='Gerar senha'
+              >
+                <IoKeySharp />
+              </button>
               <button className="px-8 py-2.5 font-semibold leading-5 rounded-xl text-white transition-colors duration-300 transform bg-green-700 hover-bg-green-600 focus:outline-none focus-bg-green-600">
                 Adicionar
               </button>
+              <div className="flex justify-end items-end mt-4">
+
+              </div>
             </div>
           </form>
         </section>

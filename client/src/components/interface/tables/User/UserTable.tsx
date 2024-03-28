@@ -12,6 +12,7 @@ interface User {
   name: string;
   email: string;
   password: string;
+  permission: string;
 }
 
 const UserTable: React.FC = () => {
@@ -35,6 +36,12 @@ const UserTable: React.FC = () => {
   };
 
   const handleUserCreated = (newUser: User) => {
+    fetch("http://localhost:3001/users")
+      .then((response) => response.json())
+      .then((data) => {
+        setUsers(data);
+      })
+      .catch((error) => console.error("Erro ao buscar serviços:", error));
     setUsers([...users, newUser]);
   };
 
@@ -146,9 +153,17 @@ const UserTable: React.FC = () => {
                           scope="col"
                           className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400"
                         >
-                          <button className="flex items-center gap-x-2">
+                          <div className="flex items-center gap-x-2">
                             <span>Email</span>
-                          </button>
+                          </div>
+                        </th>
+                        <th
+                          scope="col"
+                          className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400"
+                        >
+                          <div className="flex items-center gap-x-2">
+                            <span>Permissão</span>
+                          </div>
                         </th>
                         <th scope="col" className="relative py-3.5 px-4">
                           <span className="sr-only">Edit</span>
@@ -161,17 +176,19 @@ const UserTable: React.FC = () => {
                           <td className="px-4 py-4 text-sm font-medium text-gray-700 whitespace-nowrap">
                             <div className="inline-flex items-center gap-x-3">
                               <div className="flex items-center gap-x-2">
-                                <div>
                                   <h2 className="font-medium text-gray-800 dark:text-white">
                                     {user.name}
                                   </h2>
-                                </div>
                               </div>
                             </div>
                           </td>
                           <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-300 whitespace-nowrap">
                             {user.email}
                           </td>
+                          <td className="px-4 py-4 text-sm text-gray-500 dark:text-gray-300 whitespace-nowrap">
+                            {user.permission}
+                          </td>
+                          
                           <td className="px-4 py-4 text-sm whitespace-nowrap">
                             <div className="flex justify-end gap-x-6">
                               <button
@@ -215,7 +232,6 @@ const UserTable: React.FC = () => {
                             </div>
                           </td>
                         </tr>
-                        
                       ))}
                     </tbody>
                   </table>

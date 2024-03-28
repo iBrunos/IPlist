@@ -3,12 +3,14 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { FaRegEye } from "react-icons/fa6";
 import { FaRegEyeSlash } from "react-icons/fa";
+import { IoKeySharp } from "react-icons/io5";
 
 interface User {
   _id: string;
   name: string;
   email: string;
   password: string;
+  permission: string;
 }
 
 interface FormUserUpdateProps {
@@ -22,7 +24,7 @@ const FormUserUpdate: React.FC<FormUserUpdateProps> = ({ user, onClose, onUpdate
   const [email, setEmail] = useState<string>(user ? user.email : "");
   const [password, setPassword] = useState<string>("");
   const [showPassword, setShowPassword] = useState(false);
-
+  const [permission, setPermisson] = useState<string>(user ? user.permission : "");
   const formRef = useRef<HTMLDivElement | null>(null);
 
   const handleClose = () => {
@@ -54,7 +56,7 @@ const FormUserUpdate: React.FC<FormUserUpdateProps> = ({ user, onClose, onUpdate
       const updatedUser = { ...user, name, password, email };
 
 
-      const response = await fetch(`https://sunx-api-agendamento.vercel.app/Users/${user._id}`, {
+      const response = await fetch(`http://localhost:3001/users/${user._id}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -63,7 +65,7 @@ const FormUserUpdate: React.FC<FormUserUpdateProps> = ({ user, onClose, onUpdate
       });
 
       if (response.ok) {
-        toast.success("O usuárop foi atualizado!");
+        toast.success("O usuário foi atualizado!");
         onUpdateUser(updatedUser); // Chame a função para atualizar o usuárop na lista
         onClose();
       } else {
@@ -75,31 +77,14 @@ const FormUserUpdate: React.FC<FormUserUpdateProps> = ({ user, onClose, onUpdate
       toast.error("Erro de rede ao atualizar o usuário!");
     }
   };
-  const generateTimeOptions = () => {
-    const options: JSX.Element[] = [];
-    const startDateTime = new Date();
-    startDateTime.setHours(8, 0, 0); // Start at 08:00
-
-    const endDateTime = new Date();
-    endDateTime.setHours(18, 0, 0); // End at 18:00
-
-    const interval = 30; // Time interval in minutes
-
-    let currentTime = new Date(startDateTime);
-
-    while (currentTime <= endDateTime) {
-      const formattedTime = currentTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
-      options.push(
-        <option key={formattedTime} value={formattedTime}>
-          {formattedTime}
-        </option>
-      );
-
-      currentTime.setMinutes(currentTime.getMinutes() + interval);
+  const generateRandomPassword = () => {
+    const charset = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*()_-+=?";
+    let password = "";
+    for (let i = 0; i < 12; i++) {
+      const randomIndex = Math.floor(Math.random() * charset.length);
+      password += charset[randomIndex];
     }
-
-    return options;
+    setPassword(password);
   };
   return (
     <>
@@ -136,6 +121,7 @@ const FormUserUpdate: React.FC<FormUserUpdateProps> = ({ user, onClose, onUpdate
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
+                  required
                 />
               </div>
               <div>
@@ -172,13 +158,39 @@ const FormUserUpdate: React.FC<FormUserUpdateProps> = ({ user, onClose, onUpdate
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
+                  required
                 />
+              </div>
+              <div>
+                <label className="text-gray-700 dark:text-gray-200" htmlFor="endTimePause">
+                  Permissão
+                </label>
+                <select
+                  id="permission"
+                  className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
+                  onChange={(e) => setPermisson(e.target.value)}
+                  value={permission}
+                  required
+                >
+                  <option value="">Selecione a permissão</option>
+                  <option value="super_admin">super_admin</option>
+                  <option value="user">user</option>
+                  <option value="reading">reading</option>
+                </select>
               </div>
             </div>
 
             <div className="flex justify-end mt-6">
+              <button
+                type="button"
+                className="px-8 py-2.5 font-semibold leading-5 rounded-xl text-white transition-colors duration-300 transform bg-gray-700 hover:bg-gray-600 focus:outline-none focus:bg-gray-600 mr-2"
+                onClick={() => generateRandomPassword()}
+                title='Gerar senha'
+              >
+                <IoKeySharp />
+              </button>
               <button className="px-8 py-2.5 font-semibold leading-5 rounded-xl text-white transition-colors duration-300 transform bg-green-700 hover-bg-green-600 focus:outline-none focus-bg-green-600">
-              Atualizar
+                Atualizar
               </button>
             </div>
           </form>
