@@ -30,7 +30,14 @@ export class IpsService {
     const ips: Ip[] = JSON.parse(ipsData);
     return ips;
   }
-
+  async findPaginated(page: number, limit: number): Promise<{ ips: Ip[]; totalCount: number }> {
+    const allIps = await this.findAll();
+    const startIndex = (page - 1) * limit;
+    const endIndex = startIndex + limit;
+    const paginatedIps = allIps.slice(startIndex, endIndex);
+    return { ips: paginatedIps, totalCount: allIps.length };
+  }
+  
   async create(createDto: CreateDto): Promise<{ message: string; createdIp: Ip }> {
     const ips = await this.findAll();
 

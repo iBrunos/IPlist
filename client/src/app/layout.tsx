@@ -6,7 +6,7 @@ const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'IPList',
-  description: 'Sistema de concentração de IPS da Prefeitura de Salvador ',
+  description: 'Sistema de concentração de IPS Bloquedos da Prefeitura de Salvador ',
 }
 
 export default function RootLayout({
@@ -17,7 +17,7 @@ export default function RootLayout({
   return (
     <html lang="pt-br" className='h-full'>
       <link rel="icon" href="/icon?<generated>" type="image/png" sizes="32x32" />
-      <body className={`${inter.className} h-full bg-neutral-800`}>{children}</body>
+      <body className={`${inter.className} h-full bg-gray-200`}>{children}</body>
     </html>
   )
 }

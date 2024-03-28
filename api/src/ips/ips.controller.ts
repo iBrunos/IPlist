@@ -9,8 +9,11 @@ export class IpsController {
   constructor(private readonly ipsService: IpsService) {}
 
   @Get()
-  async getAllIps(): Promise<any[]> {
-    return this.ipsService.findAll();
+  async getAllIps(
+    @Query('page') page: number = 1,
+    @Query('limit') limit: number = 10
+  ): Promise<{ ips: Ip[]; totalCount: number }> {
+    return this.ipsService.findPaginated(page, limit);
   }
 
   @Post('/create')

@@ -12,5 +12,82 @@
     "disabled": false,
     "createdAt": "2024-03-28T16:10:10.013Z",
     "updatedAt": null
+  },
+  {
+    "ip": "444/555",
+    "description": "44 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T17:47:43.248Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "52.158.213.44/18",
+    "description": "block (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T17:52:08.298Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "52.252.250.240/16",
+    "description": "qweqwe (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T17:52:14.597Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "40.124.170.249/31",
+    "description": "sdfsdf (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T17:52:25.833Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "13.83.100.144/31",
+    "description": "232333 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T17:52:32.530Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "455/31",
+    "description": "45345 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T17:52:37.654Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "353/16",
+    "description": "43 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T17:52:55.593Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "345/31",
+    "description": "3453 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T17:52:59.635Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "33/32",
+    "description": "33 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T18:31:19.491Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "55/16",
+    "description": "5 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T18:31:45.261Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "44/29",
+    "description": "4 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-28T18:34:04.144Z",
+    "updatedAt": null
   }
 ]

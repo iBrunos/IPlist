@@ -5,6 +5,8 @@ import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import { format } from 'date-fns';
 import { isValid } from 'date-fns';
+import Pagination from '../../pagination/Pagination';
+
 interface Ip {
   ip: string;
   description: string;
@@ -15,11 +17,37 @@ interface Ip {
 
 const IpsTable: React.FC = () => {
   const [showAddIp, setShowAddIp] = useState(false);
-  const [ips, setIps] = useState<Ip[]>([]); // Initialize with an empty array
+  const [ips, setIps] = useState<Ip[]>([]);
   const [editingIp, setEditingIp] = useState<Ip | null>(null);
   const [showEditIp, setShowEditIp] = useState(false);
   const [confirmDeleteIp, setConfirmDeleteIp] = useState<Ip | null>(null);
-  const [user, setUser] = useState<string>(localStorage.getItem('user') || ''); // Obter o nome do usuário do localStorage
+  const [currentPage, setCurrentPage] = useState(1);
+  const [itemsPerPage, setItemsPerPage] = useState(10); // Change as per your requirement
+  const [totalPages, setTotalPages] = useState<number>(0); // Inicialize totalPages com 0 ou outro valor padrão
+
+  const fetchIps = async () => {
+    try {
+      const response = await fetch(`http://localhost:3001/ips?page=${currentPage}&limit=${itemsPerPage}`);
+      if (response.ok) {
+        const { ips, totalCount } = await response.json();
+        setIps(ips);
+        const pagesCount = Math.ceil(totalCount / itemsPerPage);
+        setTotalPages(pagesCount);
+        // Faça algo com totalPages, como armazená-lo em um estado
+      } else {
+        console.error('Erro ao buscar os IPs:', response.statusText);
+        toast.error("Erro ao buscar os IPs!");
+      }
+    } catch (error) {
+      console.error('Erro de rede ao buscar os IPs:', error);
+      toast.error("Erro de rede ao buscar os IPs!");
+    }
+  };
+  
+
+  useEffect(() => {
+    fetchIps();
+  }, [currentPage, itemsPerPage]);
 
   const handleEditIpClick = (ip: Ip) => {
     setEditingIp(ip);
@@ -33,7 +61,7 @@ const IpsTable: React.FC = () => {
     fetch("http://localhost:3001/ips")
       .then((response) => response.json())
       .then((data) => {
-        setIps(data);
+        setIps(data.ips);
       })
       .catch((error) => console.error("Erro ao buscar ips:", error));
   };
@@ -41,26 +69,14 @@ const IpsTable: React.FC = () => {
   const handleAddIpClick = () => {
     setShowAddIp(true);
   };
-  const fetchIps = async () => {
-    try {
-      const response = await fetch('http://localhost:3001/ips');
-      if (response.ok) {
-        const data = await response.json();
-        setIps(data);
-      } else {
-        console.error('Erro ao buscar os IPs:', response.statusText);
-        toast.error("Erro ao buscar os IPs!");
-      }
-    } catch (error) {
-      console.error('Erro de rede ao buscar os IPs:', error);
-      toast.error("Erro de rede ao buscar os IPs!");
-    }
-  };
+
   const handleIpCreated = (newIp: Ip) => {
     fetchIps();
     setIps([...ips, newIp]);
   };
-
+  const handlePageChange = (pageNumber: number) => {
+    setCurrentPage(pageNumber);
+  };
 
   const handleCloseAddIps = () => {
     setShowAddIp(false);
@@ -68,7 +84,7 @@ const IpsTable: React.FC = () => {
     fetch("http://localhost:3001/ips")
       .then((response) => response.json())
       .then((data) => {
-        setIps(data);
+        setIps(data.ips);
       })
       .catch((error) => console.error("Erro ao buscar ips:", error));
   };
@@ -136,12 +152,12 @@ const IpsTable: React.FC = () => {
 
   const handleToggleChange = async (ip: Ip) => {
     try {
-      const updatedIp = { 
-        ...ip, 
+      const updatedIp = {
+        ...ip,
         disabled: !ip.disabled,
         updatedAt: new Date().toISOString() // Garante que updatedAt seja uma string no formato de data
-      }; 
-  
+      };
+
       const response = await fetch(`http://localhost:3001/ips/${encodeURIComponent(ip.ip)}`, {
         method: 'PUT',
         headers: {
@@ -149,7 +165,7 @@ const IpsTable: React.FC = () => {
         },
         body: JSON.stringify(updatedIp),
       });
-  
+
       if (response.ok) {
         // Atualiza o estado local apenas se a requisição for bem-sucedida
         const updatedIps = ips.map(ipItem =>
@@ -166,8 +182,7 @@ const IpsTable: React.FC = () => {
       toast.error('Erro de rede ao alterar o estado do IP!');
     }
   };
-  
-  
+
   return (
     <>
       <ToastContainer />
@@ -282,7 +297,7 @@ const IpsTable: React.FC = () => {
                                 onChange={() => handleToggleChange(ip)}
                                 className="sr-only peer"
                                 title={ip.disabled ? 'Desativar' : 'Ativar'}
-                                />
+                              />
                               <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                               <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
                             </label>
@@ -338,6 +353,7 @@ const IpsTable: React.FC = () => {
               </div>
             </div>
           </div>
+          <Pagination currentPage={currentPage} totalPages={totalPages} onPageChange={handlePageChange} />
         </section>
       </main>
       {confirmDeleteIp && (
@@ -377,7 +393,9 @@ const IpsTable: React.FC = () => {
               </div>
             </div>
           </div>
+
         </div>
+
       )}
     </>
   );
