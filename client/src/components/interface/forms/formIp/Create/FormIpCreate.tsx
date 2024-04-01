@@ -77,7 +77,7 @@ const FormIpCreate: React.FC<{
                    
                 }
             });
-            console.log("userName: ",username)
+
             const currentDate = new Date();
             const formattedCreatedAt = currentDate.toISOString();
             const formattedUpdatedAt = currentDate.toISOString();

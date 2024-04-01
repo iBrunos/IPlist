@@ -152,12 +152,25 @@ const IpsTable: React.FC = () => {
 
   const handleToggleChange = async (ip: Ip) => {
     try {
+      const cookies = document.cookie.split(';');
+      let username = '';
+      cookies.forEach(cookie => {
+          const [key, value] = cookie.split('=');
+          if (key.trim() === 'userName') {
+              username = value;
+          }
+      });
+  
+      // Substitui o valor de "(por: ...)" na descrição pelo novo username
+      const updatedDescription = ip.description.replace(/\(por:\s*[^)]*\)/, `(por: ${username})`);
+  
       const updatedIp = {
         ...ip,
+        description: updatedDescription,
         disabled: !ip.disabled,
         updatedAt: new Date().toISOString() // Garante que updatedAt seja uma string no formato de data
       };
-
+  
       const response = await fetch(`http://localhost:3001/ips/${encodeURIComponent(ip.ip)}`, {
         method: 'PUT',
         headers: {
@@ -165,13 +178,14 @@ const IpsTable: React.FC = () => {
         },
         body: JSON.stringify(updatedIp),
       });
-
+  
       if (response.ok) {
-        // Atualiza o estado local apenas se a requisição for bem-sucedida
-        const updatedIps = ips.map(ipItem =>
-          ipItem.ip === updatedIp.ip ? updatedIp : ipItem,
-        );
-        setIps(updatedIps);
+        fetch("http://localhost:3001/ips")
+        .then((response) => response.json())
+        .then((data) => {
+          setIps(data.ips);
+        })
+        .catch((error) => console.error("Erro ao buscar ips:", error));
         toast.success(`IP ${updatedIp.disabled ? 'ativado' : 'desativado'} com sucesso!`);
       } else {
         console.error('Erro ao alterar o estado do IP:', response.statusText);
@@ -182,7 +196,7 @@ const IpsTable: React.FC = () => {
       toast.error('Erro de rede ao alterar o estado do IP!');
     }
   };
-
+  
   return (
     <>
       <ToastContainer />

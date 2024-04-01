@@ -4,84 +4,49 @@
     "description": "teste (por: admin)",
     "disabled": false,
     "createdAt": "2024-03-23T22:23:36.743Z",
-    "updatedAt": "2024-03-27T12:46:00.068Z"
-  },
-  {
-    "ip": "44/4",
-    "description": "444 (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-28T16:10:10.013Z",
-    "updatedAt": null
+    "updatedAt": "2024-04-01T12:12:31.114Z"
   },
   {
     "ip": "444/555",
     "description": "44 (por: admin)",
     "disabled": false,
     "createdAt": "2024-03-28T17:47:43.248Z",
-    "updatedAt": null
-  },
-  {
-    "ip": "52.158.213.44/18",
-    "description": "block (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-28T17:52:08.298Z",
-    "updatedAt": null
+    "updatedAt": "2024-04-01T12:11:53.423Z"
   },
   {
     "ip": "52.252.250.240/16",
     "description": "qweqwe (por: admin)",
     "disabled": false,
     "createdAt": "2024-03-28T17:52:14.597Z",
-    "updatedAt": null
+    "updatedAt": "2024-04-01T12:12:22.647Z"
   },
   {
     "ip": "40.124.170.249/31",
     "description": "sdfsdf (por: admin)",
     "disabled": false,
     "createdAt": "2024-03-28T17:52:25.833Z",
-    "updatedAt": null
+    "updatedAt": "2024-04-01T12:12:24.728Z"
   },
   {
     "ip": "13.83.100.144/31",
     "description": "232333 (por: admin)",
     "disabled": false,
     "createdAt": "2024-03-28T17:52:32.530Z",
-    "updatedAt": null
+    "updatedAt": "2024-04-01T12:12:25.589Z"
   },
   {
     "ip": "455/31",
     "description": "45345 (por: admin)",
     "disabled": false,
     "createdAt": "2024-03-28T17:52:37.654Z",
-    "updatedAt": null
-  },
-  {
-    "ip": "353/16",
-    "description": "43 (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-28T17:52:55.593Z",
-    "updatedAt": null
+    "updatedAt": "2024-04-01T12:12:26.605Z"
   },
   {
     "ip": "345/31",
     "description": "3453 (por: admin)",
     "disabled": false,
     "createdAt": "2024-03-28T17:52:59.635Z",
-    "updatedAt": null
-  },
-  {
-    "ip": "33/32",
-    "description": "33 (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-28T18:31:19.491Z",
-    "updatedAt": null
-  },
-  {
-    "ip": "55/16",
-    "description": "5 (por: admin)",
-    "disabled": false,
-    "createdAt": "2024-03-28T18:31:45.261Z",
-    "updatedAt": null
+    "updatedAt": "2024-04-01T12:12:27.502Z"
   },
   {
     "ip": "44/29",
@@ -89,5 +54,47 @@
     "disabled": false,
     "createdAt": "2024-03-28T18:34:04.144Z",
     "updatedAt": null
+  },
+  {
+    "ip": "13.48.120.61/32",
+    "description": "qwqewe (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-30T02:36:06.733Z",
+    "updatedAt": null
+  },
+  {
+    "ip": "3.125.93.60/16",
+    "description": "3 (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-30T02:36:33.806Z",
+    "updatedAt": "2024-04-01T12:12:33.000Z"
+  },
+  {
+    "ip": "15.161.69.247/31",
+    "description": "asdas (por: admin)",
+    "disabled": true,
+    "createdAt": "2024-03-30T02:36:47.071Z",
+    "updatedAt": "2024-04-01T12:09:24.433Z"
+  },
+  {
+    "ip": "16.62.191.237/23",
+    "description": "s (por: admin)",
+    "disabled": true,
+    "createdAt": "2024-03-30T02:36:55.334Z",
+    "updatedAt": "2024-04-01T12:05:55.566Z"
+  },
+  {
+    "ip": "18.101.116.53/16",
+    "description": "df (por: admin)",
+    "disabled": false,
+    "createdAt": "2024-03-30T02:37:01.971Z",
+    "updatedAt": "2024-04-01T12:08:59.049Z"
+  },
+  {
+    "ip": "52.60.125.217/16",
+    "description": "asd (por: admin)",
+    "disabled": true,
+    "createdAt": "2024-03-30T02:37:12.042Z",
+    "updatedAt": "2024-04-01T12:08:32.227Z"
   }
 ]

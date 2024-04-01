@@ -61,35 +61,43 @@ export class IpsService {
     return { message: 'Ip criado com sucesso', createdIp: newIp };
 }
 
-
-  async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; updatedIp: Ip }> {
-    const ips = await this.findAll();
-    const index = ips.findIndex(item => item.ip === id);
-    
-    if (index === -1) {
-        throw new NotFoundException('Ip não encontrado');
-    }
-    
-    // Extrai a parte criptografada do texto de descrição
-    const encryptedText = updatedIp.description.split('(por: ')[1].slice(0, -1);
-    
-    // Descriptografa a parte criptografada do texto
-    const decryptedText = decryptValue(encryptedText, 'cogel');
-    
-    // Substitui a parte criptografada pela descriptografada no texto de descrição
-    updatedIp.description = updatedIp.description.replace('(por: ' + encryptedText + ')', '(por: ' + decryptedText + ')');
-
-    ips[index].description = updatedIp.description;
-    ips[index].disabled = updatedIp.disabled;
-    ips[index].updatedAt = new Date().toISOString();
+async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; updatedIp: Ip }> {
+  const ips = await this.findAll();
+  const index = ips.findIndex(item => item.ip === id);
   
-    // Não é necessário adicionar ou remover '#' aqui, pois a lógica está na função writeFile
-    
-    await this.writeFile(ips);
-    
-    return { message: 'Ip atualizado com sucesso', updatedIp: ips[index] };
+  if (index === -1) {
+    throw new NotFoundException('Ip não encontrado');
+  }
+  
+  // Extrai a parte criptografada do texto de descrição
+  const encryptedTextMatch = updatedIp.description.match(/\(por:\s*(.*?)\)/);
+  
+  if (!encryptedTextMatch || encryptedTextMatch.length < 2) {
+    throw new Error('Texto criptografado não encontrado na descrição');
+  }
+  
+  const encryptedText = encryptedTextMatch[1];
+  console.log('Texto criptografado:', encryptedText);
+  
+  // Descriptografa a parte criptografada do texto
+  const decryptedText = decryptValue(encryptedText, 'cogel');
+  console.log('Texto descriptografado:', decryptedText);
+  
+  // Substitui a parte criptografada pela descriptografada no texto de descrição
+  updatedIp.description = updatedIp.description.replace(`(por: ${encryptedText})`, `(por: ${decryptedText})`);
+
+  ips[index].description = updatedIp.description;
+  ips[index].disabled = updatedIp.disabled;
+  ips[index].updatedAt = new Date().toISOString();
+
+  // Não é necessário adicionar ou remover '#' aqui, pois a lógica está na função writeFile
+  
+  await this.writeFile(ips);
+  
+  return { message: 'Ip atualizado com sucesso', updatedIp: ips[index] };
 }
-  
+
+
   async deleteById(id: string): Promise<{ message: string; deletedIp: Ip }> {
     const ips = await this.findAll();
     const index = ips.findIndex(item => item.ip === id);
