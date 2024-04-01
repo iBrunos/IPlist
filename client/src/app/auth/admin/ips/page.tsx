@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import HeaderAdmin from '@/components/layout/HeaderAdmin';
 import HeaderUser from '@/components/layout/HeaderUser';
 import IpsTable from '../../../../components/interface/tables/Ip/IpsTable';
+import IpsTableReading from '../../../../components/interface/tables/Ip/IpsTableReading';
 import CryptoJS from 'crypto-js';
 
 export default function Ips() {
@@ -35,13 +36,19 @@ export default function Ips() {
       return <HeaderUser />;
     }
   };
-
+  const renderIpTable = () => {
+    if (permission === 'super_admin' || permission === 'user') {
+      return <IpsTable />;
+    } else {
+      return <IpsTableReading />;
+    }
+  };
   // Renderizar o componente IpsTable se houver permissão
   return (
     <>
       <main className="bg-gradient-to-t from-gray-200 via-gray-300 h-full to-gray-300">
         {renderHeader()}
-        <IpsTable />
+        {renderIpTable()}
       </main>
     </>
   );

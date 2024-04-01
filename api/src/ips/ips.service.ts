@@ -60,7 +60,6 @@ export class IpsService {
     await this.writeFile(ips);
     return { message: 'Ip criado com sucesso', createdIp: newIp };
 }
-
 async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; updatedIp: Ip }> {
   const ips = await this.findAll();
   const index = ips.findIndex(item => item.ip === id);
@@ -69,6 +68,8 @@ async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; u
     throw new NotFoundException('Ip não encontrado');
   }
   
+  console.log("IP original:", ips[index]);
+
   // Extrai a parte criptografada do texto de descrição
   const encryptedTextMatch = updatedIp.description.match(/\(por:\s*(.*?)\)/);
   
@@ -76,27 +77,24 @@ async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; u
     throw new Error('Texto criptografado não encontrado na descrição');
   }
   
-  const encryptedText = encryptedTextMatch[1];
-  console.log('Texto criptografado:', encryptedText);
-  
+  const encryptedText = encryptedTextMatch[1];  
+
   // Descriptografa a parte criptografada do texto
-  const decryptedText = decryptValue(encryptedText, 'cogel');
-  console.log('Texto descriptografado:', decryptedText);
-  
+  const decryptedText = decryptValue(encryptedText, 'cogel');  
+
+
   // Substitui a parte criptografada pela descriptografada no texto de descrição
   updatedIp.description = updatedIp.description.replace(`(por: ${encryptedText})`, `(por: ${decryptedText})`);
 
+  ips[index].ip = updatedIp.ip;
   ips[index].description = updatedIp.description;
   ips[index].disabled = updatedIp.disabled;
   ips[index].updatedAt = new Date().toISOString();
-
-  // Não é necessário adicionar ou remover '#' aqui, pois a lógica está na função writeFile
-  
+    
   await this.writeFile(ips);
   
   return { message: 'Ip atualizado com sucesso', updatedIp: ips[index] };
 }
-
 
   async deleteById(id: string): Promise<{ message: string; deletedIp: Ip }> {
     const ips = await this.findAll();
@@ -156,7 +154,6 @@ async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; u
       });
     });
   }
-  
 
   private async uploadFileViaSFTP(filePath: string): Promise<void> {
     const sftp = new Client();

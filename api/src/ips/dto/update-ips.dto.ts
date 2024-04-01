@@ -2,13 +2,13 @@ import { IsString, IsBoolean } from 'class-validator';
 
 export class UpdateDto {
   @IsString()
-  readonly ip: string;
+  ip: string;
 
   @IsString()
   description: string;
   
   @IsBoolean()
-  readonly disabled: boolean;
+  disabled: boolean;
   
   @IsString()
   readonly createdAt: string;

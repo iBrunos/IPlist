@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, ChangeEvent } from 'react';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 
@@ -21,8 +21,12 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
     const extractDescription = (fullDescription: string) => {
         return fullDescription.split('(por:')[0].trim();
     };
+    const extractCidr = (fullCidr: string) => {
+        return fullCidr.split('/')[1].trim();
+    };
 
-    const [ip, setIp] = useState<string>(ipData ? ipData.ip : "");
+    const [ip, setIp] = useState<string>(ipData ? ipData.ip.split('/')[0] : "");
+    const [cidr, setCidr] = useState<string>(ipData ? extractCidr(ipData.ip) : "");
     const [description, setDescription] = useState<string>(ipData ? extractDescription(ipData.description) : "");
     const [disabled, setdisabled] = useState<boolean>(ipData ? ipData.disabled : true);
     const [createdAt, setCreatedAt] = useState<string>(ipData ? ipData.createdAt : "");
@@ -49,7 +53,7 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-
+    
         try {
             if (!ipData) {
                 return;
@@ -64,18 +68,18 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
                 const [key, value] = cookie.split('=');
                 if (key.trim() === 'userName') {
                     username = value;
-
                 }
             });
+            
             const updatedIp = {
-                ip,
+                ip: ipData.ip.split('/')[0] + '/' + cidr,
                 description: `${description} (por: ${username})`,
                 disabled,
                 createdAt: formattedCreatedAt,
                 updatedAt: formattedUpdatedAt,
             };
             const encodedIP = encodeURIComponent(ipData.ip);
-
+    
             const response = await fetch(`http://localhost:3001/ips/${encodedIP}`, {
                 method: 'PUT',
                 headers: {
@@ -96,6 +100,7 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
             toast.error("Erro de rede ao atualizar o IP!");
         }
     };
+    
 
     return (
         <>
@@ -138,6 +143,23 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
                             <div>
                                 <label
                                     className="text-gray-700 dark:text-gray-200"
+                                    htmlFor="cidr"
+                                >
+                                    CIDR
+                                </label>
+                                <input
+                                    id="cidr"
+                                    type="number"
+                                    value={cidr}
+                                    onChange={(e) => setCidr(e.target.value)}
+                                    className="block w-full px-4 py-2 mt-2 text-gray-700 bg-white border border-gray-200 rounded-md dark:bg-gray-800 dark:text-gray-300 dark:border-gray-600 focus:border-blue-400 focus:ring-blue-300 focus:ring-opacity-40 dark:focus:border-blue-300 focus:outline-none focus:ring"
+                                    min={16}
+                                    max={32}
+                                />
+                            </div>
+                            <div>
+                                <label
+                                    className="text-gray-700 dark:text-gray-200"
                                     htmlFor="description"
                                 >
                                     Descrição
@@ -152,7 +174,6 @@ const FormIpUpdate: React.FC<FormIpUpdateProps> = ({ ip: ipData, onClose, onUpda
                                 />
                             </div>
                         </div>
-
                         <div className="flex justify-end mt-6">
                             <button className="px-8 py-2.5 font-semibold leading-5 rounded-xl text-white transition-colors duration-300 transform bg-green-700 hover-bg-green-600 focus:outline-none focus-bg-green-600">
                                 Atualizar

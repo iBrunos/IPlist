@@ -51,11 +51,6 @@ const IpsTable: React.FC = () => {
     fetchIps();
   }, [currentPage, itemsPerPage]);
 
-  const handleEditIpClick = (ip: Ip) => {
-    setEditingIp(ip);
-    setShowEditIp(true);
-  };
-
   const handleCloseEditIp = () => {
     setEditingIp(null);
     setShowEditIp(false);
@@ -66,10 +61,6 @@ const IpsTable: React.FC = () => {
         setIps(data.ips);
       })
       .catch((error) => console.error("Erro ao buscar ips:", error));
-  };
-
-  const handleAddIpClick = () => {
-    setShowAddIp(true);
   };
 
   const handleIpCreated = (newIp: Ip) => {
@@ -103,17 +94,6 @@ const IpsTable: React.FC = () => {
   useEffect(() => {
     fetchIps();
   }, []);
-
-  const handleDeleteIp = async (ipToDelete: string) => {
-
-    const ipItemToDelete = ips.find((ipItem) => ipItem.ip === ipToDelete);
-    if (ipItemToDelete) {
-
-      setConfirmDeleteIp(ipItemToDelete);
-    } else {
-
-    }
-  };
 
   const confirmDelete = async () => {
     if (confirmDeleteIp) {
@@ -152,52 +132,6 @@ const IpsTable: React.FC = () => {
     return format(date, "dd/MM/yyyy 'às' HH:mm:ss");
   };
 
-  const handleToggleChange = async (ip: Ip) => {
-    try {
-      const cookies = document.cookie.split(';');
-      let username = '';
-      cookies.forEach(cookie => {
-        const [key, value] = cookie.split('=');
-        if (key.trim() === 'userName') {
-          username = value;
-        }
-      });
-
-      // Substitui o valor de "(por: ...)" na descrição pelo novo username
-      const updatedDescription = ip.description.replace(/\(por:\s*[^)]*\)/, `(por: ${username})`);
-
-      const updatedIp = {
-        ...ip,
-        description: updatedDescription,
-        disabled: !ip.disabled,
-        updatedAt: new Date().toISOString() // Garante que updatedAt seja uma string no formato de data
-      };
-
-      const response = await fetch(`http://localhost:3001/ips/${encodeURIComponent(ip.ip)}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedIp),
-      });
-
-      if (response.ok) {
-        fetch("http://localhost:3001/ips")
-          .then((response) => response.json())
-          .then((data) => {
-            setIps(data.ips);
-          })
-          .catch((error) => console.error("Erro ao buscar ips:", error));
-        toast.success(`IP ${updatedIp.disabled ? 'ativado' : 'desativado'} com sucesso!`);
-      } else {
-        console.error('Erro ao alterar o estado do IP:', response.statusText);
-        toast.error('Erro ao alterar o estado do IP!');
-      }
-    } catch (error) {
-      console.error('Erro de rede:', error);
-      toast.error('Erro de rede ao alterar o estado do IP!');
-    }
-  };
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value: string = e.target.value;
     const formattedValue: string = value.replace(/[^\d./]/g, '');
@@ -221,27 +155,6 @@ const IpsTable: React.FC = () => {
         <section className="container">
           <div className="flex items-center px-9 md:gap-x-3 lg:gap-x-3">
             <h1 className="text-md text-2xl font-bold text-gray-700">Lista de IP's</h1>
-            <button
-              type="button"
-              onClick={handleAddIpClick}
-              className="flex items-center rounded px-2 text-sm text-blue-600 transition-colors duration-300 hover:text-blue-400 focus:outline-none dark:text-blue-400 dark:hover:text-blue-500"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="w-4 h-4"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth="2"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M12 6v6m0 0v6m0-6h6m-6 0H6"
-                />
-              </svg>
-              <span className="mx-2">Adicionar IP</span>
-            </button>
             <div className="ml-auto">
               <div className="flex items-center ">
                 <input
@@ -289,12 +202,6 @@ const IpsTable: React.FC = () => {
                         >
                           Ultima Alteração
                         </th>
-                        <th
-                          scope="col"
-                          className="px-4 py-3.5 text-sm font-normal text-left rtl:text-right text-gray-500 dark:text-gray-400"
-                        >
-                          Desativar
-                        </th>
                         <th scope="col" className="relative py-3.5 px-4">
                           <span className="sr-only">Edit</span>
                         </th>
@@ -332,60 +239,16 @@ const IpsTable: React.FC = () => {
                             </div>
                           </td>
                           <td className="px-4 py-4 text-sm whitespace-normal break-words">
-                            <label className="inline-flex items-center cursor-pointer">
+                            <label className="inline-flex items-center">
                               <input
                                 type="checkbox"
                                 checked={ip.disabled}
-                                onChange={() => handleToggleChange(ip)}
                                 className="sr-only peer"
                                 title={ip.disabled ? 'Desativar' : 'Ativar'}
                               />
                               <div className="relative w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-blue-600"></div>
                               <span className="ms-3 text-sm font-medium text-gray-900 dark:text-gray-300"></span>
                             </label>
-                          </td>
-                          <td className="px-4 py-4 text-sm whitespace-nowrap">
-                            <div className="flex justify-end gap-x-6">
-                              <button
-                                className="text-gray-500 transition-colors duration-200 dark:hover:text-red-500 dark:text-gray-300 hover:text-red-500 focus:outline-none"
-                                onClick={() => handleDeleteIp(ip.ip)}
-                                title='Excluir'
-                              >
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                  fill="none"
-                                  viewBox="0 0 24 24"
-                                  strokeWidth="1.5"
-                                  stroke="currentColor"
-                                  className="w-5 h-5"
-                                >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                                  />
-                                </svg>
-                              </button>
-                              <button
-                                className="text-gray-500 transition-colors duration-200 dark:hover:text-yellow-500 dark:text-gray-300 hover:text-yellow-500 focus:outline-none"
-                                onClick={() => handleEditIpClick(ip)} // Abre o formulário de edição com o serviço
-                                title='Editar'
-                              >                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                strokeWidth="1.5"
-                                stroke="currentColor"
-                                className="w-5 h-5"
-                              >
-                                  <path
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                    d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10"
-                                  />
-                                </svg>
-                              </button>
-                            </div>
                           </td>
                         </tr>
                       ))}
