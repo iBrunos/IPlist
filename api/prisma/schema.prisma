@@ -1,0 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  email     String   @unique
+  password  String
+  equipe    String
+  role      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  ipsCreated      Ip[]       @relation("IpCreatedBy")
+  ipsApproved     Ip[]       @relation("IpApprovedBy")
+  hashesCreated   Hash[]     @relation("HashCreatedBy")
+  hashesApproved  Hash[]     @relation("HashApprovedBy")
+  domainsCreated  Domain[]   @relation("DomainCreatedBy")
+  domainsApproved Domain[]   @relation("DomainApprovedBy")
+  auditLogs       AuditLog[]
+}
+
+model Ip {
+  id          String    @id @default(uuid())
+  address     String    @unique
+  description String?
+  expiresAt   DateTime?
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  createdBy    User   @relation("IpCreatedBy", fields: [createdById], references: [id])
+  createdById  String
+
+  approvedBy   User?   @relation("IpApprovedBy", fields: [approvedById], references: [id])
+  approvedById String?
+}
+
+model Hash {
+  id          String    @id @default(uuid())
+  value       String    @unique
+  type        String
+  description String?
+  expiresAt   DateTime?
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  createdBy    User   @relation("HashCreatedBy", fields: [createdById], references: [id])
+  createdById  String
+
+  approvedBy   User?   @relation("HashApprovedBy", fields: [approvedById], references: [id])
+  approvedById String?
+}
+
+model Domain {
+  id          String    @id @default(uuid())
+  domain      String    @unique
+  description String?
+  expiresAt   DateTime?
+  status      String    @default("pending")
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  createdBy    User   @relation("DomainCreatedBy", fields: [createdById], references: [id])
+  createdById  String
+
+  approvedBy   User?   @relation("DomainApprovedBy", fields: [approvedById], references: [id])
+  approvedById String?
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  action    String
+  entity    String
+  entityId  String?
+  details   String?
+  createdAt DateTime @default(now())
+
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id])
+}

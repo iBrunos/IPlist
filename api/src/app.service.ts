@@ -1,11 +1,8 @@
-import { Injectable, Res } from '@nestjs/common';
-import { Response } from 'express';
-import * as path from 'path';
+import { Injectable } from '@nestjs/common';
 
 @Injectable()
 export class AppService {
-  getOnline(@Res() res: Response): void {
-    const filePath = path.join(__dirname, '..', 'public', 'index.html');
-    res.sendFile(filePath);
+  getHello(): string {
+    return 'Hello World!';
   }
 }

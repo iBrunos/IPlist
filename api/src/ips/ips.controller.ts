@@ -1,36 +1,36 @@
-import { Body, Controller, Delete, Get, Param, Post, Put, Query } from '@nestjs/common';
-import { IpsService } from './ips.service';
-import { CreateDto } from './dto/create-ips.dto';
-import { UpdateDto } from './dto/update-ips.dto';
-import { Ip } from './ips.service'; // Importe o tipo Ip daqui
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common'
+import { IpsService } from './ips.service'
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'
+import { RolesGuard } from '../auth/roles.guard'
 
-@Controller('/ips')
+@Controller('ips')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class IpsController {
+
   constructor(private readonly ipsService: IpsService) {}
 
+  @Post()
+  create(@Body() body: any, @Request() req: any) {
+    return this.ipsService.create(body, req.user)
+  }
+
   @Get()
-  async getAllIps(
-    @Query('page') page: number = 1,
-    @Query('limit') limit: number = 10
-  ): Promise<{ ips: Ip[]; totalCount: number }> {
-    return this.ipsService.findPaginated(page, limit);
+  findAll(@Request() req: any) {
+    return this.ipsService.findAll(req.user)
   }
 
-  @Post('/create')
-  async create(@Body() createDto: CreateDto): Promise<{ message: string }> {
-    return this.ipsService.create(createDto);
+  @Put(':id/approve')
+  approve(@Param('id') id: string, @Request() req: any) {
+    return this.ipsService.approve(id, req.user)
   }
 
-  @Put('/:ip')
-  async updateIp(
-    @Param('ip') ip: string,
-    @Body() updateDto: UpdateDto,
-  ): Promise<{ message: string, updatedIp: Ip }> {
-    return this.ipsService.updateById(ip, updateDto);
+  @Put(':id')
+  update(@Param('id') id: string, @Body() body: any, @Request() req: any) {
+    return this.ipsService.update(id, body, req.user)
   }
 
-  @Delete('/:ip')
-  async deleteIp(@Param('ip') id: string): Promise<{ message: string }> {
-    return this.ipsService.deleteById(id);
+  @Delete(':id')
+  remove(@Param('id') id: string, @Request() req: any) {
+    return this.ipsService.remove(id, req.user)
   }
 }

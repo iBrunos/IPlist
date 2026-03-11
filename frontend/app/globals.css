@@ -1,0 +1,10 @@
+@import "tailwindcss";
+
+:root {
+  --font-rajdhani: 'Rajdhani', sans-serif;
+  --font-mono: 'Share Tech Mono', monospace;
+}
+
+* {
+  box-sizing: border-box;
+}

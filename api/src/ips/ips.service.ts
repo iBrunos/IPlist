@@ -1,174 +1,151 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
-import { CreateDto } from './dto/create-ips.dto';
-import { UpdateDto } from './dto/update-ips.dto';
-import * as fs from 'fs';
-import * as Client from 'ssh2-sftp-client';
-import * as CryptoJS from 'crypto-js';
+import { Injectable, ForbiddenException, NotFoundException } from '@nestjs/common'
+import { PrismaService } from '../database/prisma.service'
+import { AuditService } from '../audit/audit.service'
+import { Role } from '../auth/roles.enum'
 
-export interface Ip {
-  ip: string;
-  description: string;
-  disabled: boolean;
-  createdAt: string;
-  updatedAt: string | null;
-}
-// Função para descriptografar o valor
-function decryptValue(encryptedValue: string, key: string): string {
-  // Decifra o valor usando a chave fornecida
-  const bytes = CryptoJS.AES.decrypt(encryptedValue, key);
-  // Converte os bytes decifrados para uma string
-  const decryptedValue: string = bytes.toString(CryptoJS.enc.Utf8);
-  return decryptedValue;
-}
 @Injectable()
 export class IpsService {
-  private readonly filePath: string = '../api/data/test.txt';
-  private readonly filePathData: string = '../api/data/data.txt';
 
-  async findAll(): Promise<Ip[]> {
-    const ipsData = await this.readFile();
-    const ips: Ip[] = JSON.parse(ipsData);
-    return ips;
-  }
-  async findPaginated(page: number, limit: number): Promise<{ ips: Ip[]; totalCount: number }> {
-    const allIps = await this.findAll();
-    const startIndex = (page - 1) * limit;
-    const endIndex = startIndex + limit;
-    const paginatedIps = allIps.slice(startIndex, endIndex);
-    return { ips: paginatedIps, totalCount: allIps.length };
-  }
-  
-  async create(createDto: CreateDto): Promise<{ message: string; createdIp: Ip }> {
-    const ips = await this.findAll();
+  constructor(
+    private prisma: PrismaService,
+    private audit: AuditService,
+  ) {}
 
-    // Descriptografa o valor da descrição se houver
-    let decryptedDescription = createDto.description;
-    if (createDto.description.includes('(por: ')) {
-        const encryptedText = createDto.description.split('(por: ')[1].slice(0, -1);
-        decryptedDescription = createDto.description.replace('(por: ' + encryptedText + ')', '(por: ' + decryptValue(encryptedText, 'cogel') + ')');
-    }
+  async create(data: any, requester: any) {
+    const status = requester.role === Role.TECNICO ? 'pending' : 'approved'
 
-    const newIp: Ip = {
-        ip: createDto.ip.replace(/\\\\/g, '\\'),
-        description: decryptedDescription,
-        disabled: createDto.disabled,
-        createdAt: new Date().toISOString(),
-        updatedAt: null,
-    };
-
-    ips.push(newIp);
-    await this.writeFile(ips);
-    return { message: 'Ip criado com sucesso', createdIp: newIp };
-}
-async updateById(id: string, updatedIp: UpdateDto): Promise<{ message: string; updatedIp: Ip }> {
-  const ips = await this.findAll();
-  const index = ips.findIndex(item => item.ip === id);
-  
-  if (index === -1) {
-    throw new NotFoundException('Ip não encontrado');
-  }
-  
-  console.log("IP original:", ips[index]);
-
-  // Extrai a parte criptografada do texto de descrição
-  const encryptedTextMatch = updatedIp.description.match(/\(por:\s*(.*?)\)/);
-  
-  if (!encryptedTextMatch || encryptedTextMatch.length < 2) {
-    throw new Error('Texto criptografado não encontrado na descrição');
-  }
-  
-  const encryptedText = encryptedTextMatch[1];  
-
-  // Descriptografa a parte criptografada do texto
-  const decryptedText = decryptValue(encryptedText, 'cogel');  
-
-
-  // Substitui a parte criptografada pela descriptografada no texto de descrição
-  updatedIp.description = updatedIp.description.replace(`(por: ${encryptedText})`, `(por: ${decryptedText})`);
-
-  ips[index].ip = updatedIp.ip;
-  ips[index].description = updatedIp.description;
-  ips[index].disabled = updatedIp.disabled;
-  ips[index].updatedAt = new Date().toISOString();
-    
-  await this.writeFile(ips);
-  
-  return { message: 'Ip atualizado com sucesso', updatedIp: ips[index] };
-}
-
-  async deleteById(id: string): Promise<{ message: string; deletedIp: Ip }> {
-    const ips = await this.findAll();
-    const index = ips.findIndex(item => item.ip === id);
-    if (index === -1) {
-      throw new NotFoundException('Ip não encontrado');
-    }
-    const deletedItem = ips.splice(index, 1)[0];
-    await this.writeFile(ips);
-    return { message: 'Ip deletado com sucesso', deletedIp: deletedItem };
-  }
-
-  private async readFile(): Promise<string> {
-    return new Promise((resolve, reject) => {
-      fs.readFile(this.filePath, 'utf8', (err, data) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve(data);
-        }
-      });
-    });
-  }
-
-  private async writeFile(ips: Ip[]): Promise<void> {
-    const sanitizedIpsJSON = ips.map(ip => ({
-      ...ip,
-      ip: ip.ip.replace(/\\\\/g, '\\'),
-    }));
-    const contentJSON = JSON.stringify(sanitizedIpsJSON, null, 2);
-    fs.writeFile(this.filePath, contentJSON, (err) => {
-      if (err) {
-        console.error('Erro ao escrever no arquivo JSON:', err);
+    const ip = await this.prisma.ip.create({
+      data: {
+        address: data.address,
+        description: data.description,
+        expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+        status,
+        createdById: requester.id,
+        approvedById: status === 'approved' ? requester.id : null,
       }
-    });
-  
-    const contentTXT = ips.map(ip => {
-      let ipLine = ip.ip;
-      if (ip.disabled) {
-        // Adiciona '#' somente se não estiver presente no início do IP
-        ipLine = ipLine.startsWith('#') ? ipLine : `#${ipLine}`;
-      } else {
-        // Remove '#' somente se estiver presente no início do IP
-        ipLine = ipLine.startsWith('#') ? ipLine.slice(1) : ipLine;
-      }
-      return `${ipLine} #${ip.description}`;
-    }).join('\n');
-  
-    return new Promise((resolve, reject) => {
-      fs.writeFile(this.filePathData, contentTXT, async (err) => {
-        if (err) {
-          reject(err);
-        } else {
-          resolve();
-          await this.uploadFileViaSFTP(this.filePathData); // Alterado para chamar a função de upload via SFTP
-        }
-      });
-    });
+    })
+
+    await this.audit.log({
+      action: 'CREATE',
+      entity: 'IP',
+      entityId: ip.id,
+      details: `IP ${ip.address} criado com status ${status}`,
+      userId: requester.id,
+    })
+
+    return ip
   }
 
-  private async uploadFileViaSFTP(filePath: string): Promise<void> {
-    const sftp = new Client();
-    try {
-      await sftp.connect({
-        host: process.env.SFTP_HOST,
-        port: parseInt(process.env.SFTP_PORT),
-        username: process.env.SFTP_USER,
-        password: process.env.SFTP_PASSWORD,
-      });
-      await sftp.put(filePath, 'data.txt'); // Envio do arquivo via SFTP
-    } catch (error) {
-      console.error('Erro ao enviar arquivo via SFTP:', error);
-    } finally {
-      sftp.end(); // Encerramento da conexão SFTP
+  async findAll(requester: any) {
+    if (requester.role === Role.TECNICO) {
+      return this.prisma.ip.findMany({
+        where: { createdById: requester.id }
+      })
     }
+
+    if (requester.role === Role.LIDER_TECNICO) {
+      return this.prisma.ip.findMany({
+        where: { createdBy: { equipe: requester.equipe } },
+        include: { createdBy: { select: { username: true, equipe: true } } }
+      })
+    }
+
+    return this.prisma.ip.findMany({
+      include: { createdBy: { select: { username: true, equipe: true } } }
+    })
+  }
+
+  async approve(id: string, requester: any) {
+    if (requester.role === Role.TECNICO) {
+      throw new ForbiddenException('Sem permissão para aprovar')
+    }
+
+    const ip = await this.prisma.ip.findUnique({
+      where: { id },
+      include: { createdBy: true }
+    })
+
+    if (!ip) throw new NotFoundException('IP não encontrado')
+
+    if (requester.role === Role.LIDER_TECNICO && ip.createdBy.equipe !== requester.equipe) {
+      throw new ForbiddenException('Só pode aprovar IPs da sua equipe')
+    }
+
+    const updated = await this.prisma.ip.update({
+      where: { id },
+      data: { status: 'approved', approvedById: requester.id }
+    })
+
+    await this.audit.log({
+      action: 'APPROVE',
+      entity: 'IP',
+      entityId: ip.id,
+      details: `IP ${ip.address} aprovado`,
+      userId: requester.id,
+    })
+
+    return updated
+  }
+
+  async update(id: string, data: any, requester: any) {
+    const ip = await this.prisma.ip.findUnique({
+      where: { id },
+      include: { createdBy: true }
+    })
+
+    if (!ip) throw new NotFoundException('IP não encontrado')
+
+    if (requester.role === Role.TECNICO && ip.createdById !== requester.id) {
+      throw new ForbiddenException('Só pode editar seus próprios IPs')
+    }
+
+    if (requester.role === Role.LIDER_TECNICO && ip.createdBy.equipe !== requester.equipe) {
+      throw new ForbiddenException('Só pode editar IPs da sua equipe')
+    }
+
+    const updated = await this.prisma.ip.update({
+      where: { id },
+      data: {
+        description: data.description,
+        expiresAt: data.expiresAt ? new Date(data.expiresAt) : null,
+      }
+    })
+
+    await this.audit.log({
+      action: 'UPDATE',
+      entity: 'IP',
+      entityId: ip.id,
+      details: `IP ${ip.address} editado`,
+      userId: requester.id,
+    })
+
+    return updated
+  }
+
+  async remove(id: string, requester: any) {
+    const ip = await this.prisma.ip.findUnique({
+      where: { id },
+      include: { createdBy: true }
+    })
+
+    if (!ip) throw new NotFoundException('IP não encontrado')
+
+    if (requester.role === Role.TECNICO && ip.createdById !== requester.id) {
+      throw new ForbiddenException('Só pode apagar seus próprios IPs')
+    }
+
+    if (requester.role === Role.LIDER_TECNICO && ip.createdBy.equipe !== requester.equipe) {
+      throw new ForbiddenException('Só pode apagar IPs da sua equipe')
+    }
+
+    await this.audit.log({
+      action: 'DELETE',
+      entity: 'IP',
+      entityId: ip.id,
+      details: `IP ${ip.address} apagado`,
+      userId: requester.id,
+    })
+
+    return this.prisma.ip.delete({ where: { id } })
   }
 }
