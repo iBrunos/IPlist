@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server'
 
 export async function GET() {
   try {
-    const res = await fetch('http://localhost:3000/feed/ips', { cache: 'no-store' })
+    const res = await fetch('https://bip.salvador.ba.gov.br/feed/ips', { cache: 'no-store' })
     const text = await res.text()
     return new NextResponse(text, {
       headers: { 'Content-Type': 'text/plain; charset=utf-8' }
