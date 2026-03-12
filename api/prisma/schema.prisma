@@ -23,6 +23,7 @@ model User {
   domainsCreated  Domain[]   @relation("DomainCreatedBy")
   domainsApproved Domain[]   @relation("DomainApprovedBy")
   auditLogs       AuditLog[]
+  externalFeeds ExternalFeed[]
 }
 
 model Ip {
@@ -84,4 +85,18 @@ model AuditLog {
 
   userId    String?
   user      User?    @relation(fields: [userId], references: [id])
+}
+
+model ExternalFeed {
+  id          String    @id @default(cuid())
+  name        String
+  url         String    @unique
+  type        String    // "ip" | "hash" | "domain"
+  interval    Int       @default(60) // minutos
+  active      Boolean   @default(true)
+  lastSyncAt  DateTime?
+  lastCount   Int       @default(0)
+  createdAt   DateTime  @default(now())
+  createdById String?
+  createdBy   User?     @relation(fields: [createdById], references: [id])
 }

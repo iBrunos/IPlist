@@ -1,71 +1,31 @@
 import { Injectable } from '@nestjs/common'
 import { PrismaService } from '../database/prisma.service'
-import { AuditService } from '../audit/audit.service'
 
 @Injectable()
 export class FeedService {
+  constructor(private prisma: PrismaService) {}
 
-  constructor(
-    private prisma: PrismaService,
-    private audit: AuditService,
-  ) {}
-
-  private isExpired(expiresAt: Date | null): boolean {
-    if (!expiresAt) return false
-    return new Date() > expiresAt
-  }
-
-  async getIpFeed(): Promise<string> {
+  async getIps(): Promise<string[]> {
     const ips = await this.prisma.ip.findMany({
-      where: { status: 'approved' }
+      where: { status: 'approved' },
+      select: { address: true }
     })
-
-    const active = ips
-      .filter(ip => !this.isExpired(ip.expiresAt))
-      .map(ip => ip.address)
-
-    await this.audit.log({
-      action: 'FEED_GENERATED',
-      entity: 'FEED',
-      details: `Feed de IPs gerado com ${active.length} entradas`,
-    })
-
-    return active.join('\n')
+    return ips.map(i => i.address)
   }
 
-  async getHashFeed(): Promise<string> {
+  async getHashes(): Promise<string[]> {
     const hashes = await this.prisma.hash.findMany({
-      where: { status: 'approved' }
+      where: { status: 'approved' },
+      select: { value: true }
     })
-
-    const active = hashes
-      .filter(h => !this.isExpired(h.expiresAt))
-      .map(h => h.value)
-
-    await this.audit.log({
-      action: 'FEED_GENERATED',
-      entity: 'FEED',
-      details: `Feed de Hashes gerado com ${active.length} entradas`,
-    })
-
-    return active.join('\n')
+    return hashes.map(h => h.value)
   }
 
-  async getDomainFeed(): Promise<string> {
+  async getDomains(): Promise<string[]> {
     const domains = await this.prisma.domain.findMany({
-      where: { status: 'approved' }
+      where: { status: 'approved' },
+      select: { domain: true }
     })
-
-    const active = domains
-      .filter(d => !this.isExpired(d.expiresAt))
-      .map(d => d.domain)
-
-    await this.audit.log({
-      action: 'FEED_GENERATED',
-      entity: 'FEED',
-      details: `Feed de Domínios gerado com ${active.length} entradas`,
-    })
-
-    return active.join('\n')
+    return domains.map(d => d.domain)
   }
 }

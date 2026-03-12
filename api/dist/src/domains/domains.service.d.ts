@@ -15,17 +15,32 @@ export declare class DomainsService {
         createdById: string;
         approvedById: string | null;
     }>;
-    findAll(requester: any): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        domain: string;
-        description: string | null;
-        expiresAt: Date | null;
-        status: string;
-        createdById: string;
-        approvedById: string | null;
-    }[]>;
+    findAll(requester: any, { page, limit, search }?: {
+        page?: number | undefined;
+        limit?: number | undefined;
+        search?: string | undefined;
+    }): Promise<{
+        data: ({
+            createdBy: {
+                username: string;
+                equipe: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            domain: string;
+            description: string | null;
+            expiresAt: Date | null;
+            status: string;
+            createdById: string;
+            approvedById: string | null;
+        })[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
     approve(id: string, requester: any): Promise<{
         id: string;
         createdAt: Date;

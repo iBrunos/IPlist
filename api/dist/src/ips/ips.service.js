@@ -42,21 +42,35 @@ let IpsService = class IpsService {
         });
         return ip;
     }
-    async findAll(requester) {
+    async findAll(requester, { page = 1, limit = 10, search = '' } = {}) {
+        const skip = (page - 1) * limit;
+        const searchFilter = search ? {
+            OR: [
+                { address: { contains: search, mode: 'insensitive' } },
+                { description: { contains: search, mode: 'insensitive' } },
+            ]
+        } : {};
+        let roleFilter = {};
         if (requester.role === roles_enum_1.Role.TECNICO) {
-            return this.prisma.ip.findMany({
-                where: { createdById: requester.id }
-            });
+            roleFilter = { createdById: requester.id };
         }
-        if (requester.role === roles_enum_1.Role.LIDER_TECNICO) {
-            return this.prisma.ip.findMany({
-                where: { createdBy: { equipe: requester.equipe } },
-                include: { createdBy: { select: { username: true, equipe: true } } }
-            });
+        else if (requester.role === roles_enum_1.Role.LIDER_TECNICO) {
+            roleFilter = { createdBy: { equipe: requester.equipe } };
         }
-        return this.prisma.ip.findMany({
-            include: { createdBy: { select: { username: true, equipe: true } } }
-        });
+        const finalWhere = Object.keys(roleFilter).length > 0 && search
+            ? { AND: [roleFilter, { OR: searchFilter.OR }] }
+            : { ...roleFilter, ...searchFilter };
+        const [data, total] = await Promise.all([
+            this.prisma.ip.findMany({
+                where: finalWhere,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
+                include: { createdBy: { select: { username: true, equipe: true } } },
+            }),
+            this.prisma.ip.count({ where: finalWhere }),
+        ]);
+        return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
     }
     async approve(id, requester) {
         if (requester.role === roles_enum_1.Role.TECNICO) {

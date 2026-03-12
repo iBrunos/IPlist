@@ -20,20 +20,20 @@ let FeedController = class FeedController {
     constructor(feedService) {
         this.feedService = feedService;
     }
-    async getIpFeed(res) {
-        const feed = await this.feedService.getIpFeed();
+    async ips(res) {
+        const data = await this.feedService.getIps();
         res.setHeader('Content-Type', 'text/plain');
-        res.send(feed);
+        res.send(data.join('\n'));
     }
-    async getHashFeed(res) {
-        const feed = await this.feedService.getHashFeed();
+    async hashes(res) {
+        const data = await this.feedService.getHashes();
         res.setHeader('Content-Type', 'text/plain');
-        res.send(feed);
+        res.send(data.join('\n'));
     }
-    async getDomainFeed(res) {
-        const feed = await this.feedService.getDomainFeed();
+    async domains(res) {
+        const data = await this.feedService.getDomains();
         res.setHeader('Content-Type', 'text/plain');
-        res.send(feed);
+        res.send(data.join('\n'));
     }
 };
 exports.FeedController = FeedController;
@@ -43,21 +43,21 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], FeedController.prototype, "getIpFeed", null);
+], FeedController.prototype, "ips", null);
 __decorate([
     (0, common_1.Get)('hashes'),
     __param(0, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], FeedController.prototype, "getHashFeed", null);
+], FeedController.prototype, "hashes", null);
 __decorate([
     (0, common_1.Get)('domains'),
     __param(0, (0, common_1.Res)()),
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [Object]),
     __metadata("design:returntype", Promise)
-], FeedController.prototype, "getDomainFeed", null);
+], FeedController.prototype, "domains", null);
 exports.FeedController = FeedController = __decorate([
     (0, common_1.Controller)('feed'),
     __metadata("design:paramtypes", [feed_service_1.FeedService])

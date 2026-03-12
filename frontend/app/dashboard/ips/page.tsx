@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useCallback } from 'react'
 import api from '@/lib/api'
 import { getUser } from '@/lib/auth'
 
@@ -14,25 +14,28 @@ interface Ip {
   createdBy?: { username: string; equipe: string }
 }
 
-// IPs protegidos - DNS públicos e servidores críticos
+interface PaginatedResponse {
+  data: Ip[]
+  total: number
+  page: number
+  limit: number
+  totalPages: number
+}
+
 const PROTECTED_IPS = new Set([
-  '8.8.8.8', '8.8.4.4',           // Google DNS
-  '1.1.1.1', '1.0.0.1',           // Cloudflare DNS
-  '9.9.9.9', '149.112.112.112',    // Quad9
-  '208.67.222.222', '208.67.220.220', // OpenDNS
-  '4.2.2.1', '4.2.2.2',           // Level3 DNS
-  '64.6.64.6', '64.6.65.6',        // Verisign
-  '185.228.168.9', '185.228.169.9', // CleanBrowsing
-  '76.76.19.19', '76.223.122.150', // Alternate DNS
-  '94.140.14.14', '94.140.15.15',  // AdGuard DNS
-  '205.171.3.65', '205.171.2.65',  // CenturyLink DNS
+  '8.8.8.8', '8.8.4.4',
+  '1.1.1.1', '1.0.0.1',
+  '9.9.9.9', '149.112.112.112',
+  '208.67.222.222', '208.67.220.220',
+  '4.2.2.1', '4.2.2.2',
+  '64.6.64.6', '64.6.65.6',
+  '185.228.168.9', '185.228.169.9',
+  '76.76.19.19', '76.223.122.150',
+  '94.140.14.14', '94.140.15.15',
+  '205.171.3.65', '205.171.2.65',
 ])
 
-const PROTECTED_PREFIXES = [
-  '127.',      // Loopback
-  '0.0.0.',    // Rede zero
-  '255.',      // Broadcast
-]
+const PROTECTED_PREFIXES = ['127.', '0.0.0.', '255.']
 
 function isProtectedIp(ip: string): string | null {
   const base = ip.split('/')[0]
@@ -41,6 +44,22 @@ function isProtectedIp(ip: string): string | null {
     if (base.startsWith(prefix)) return `${base} é um endereço reservado`
   }
   return null
+}
+
+function formatIpInput(value: string): string {
+  const clean = value.replace(/[^\d.]/g, '')
+  const parts = clean.split('.')
+  const limited = parts.map(p => {
+    const num = parseInt(p)
+    if (isNaN(num)) return ''
+    return Math.min(255, num).toString()
+  })
+  return limited.slice(0, 4).join('.')
+}
+
+const statusColor: Record<string, string> = {
+  approved: 'text-[#00ff64] border-[rgba(0,255,100,0.3)] bg-[rgba(0,255,100,0.05)]',
+  pending: 'text-yellow-400 border-[rgba(251,191,36,0.3)] bg-[rgba(251,191,36,0.05)]',
 }
 
 function ConfirmModal({ message, onConfirm, onCancel }: {
@@ -65,24 +84,8 @@ function ConfirmModal({ message, onConfirm, onCancel }: {
   )
 }
 
-function formatIpInput(value: string): string {
-  const clean = value.replace(/[^\d.]/g, '')
-  const parts = clean.split('.')
-  const limited = parts.map(p => {
-    const num = parseInt(p)
-    if (isNaN(num)) return ''
-    return Math.min(255, num).toString()
-  })
-  return limited.slice(0, 4).join('.')
-}
-
-const statusColor: Record<string, string> = {
-  approved: 'text-[#00ff64] border-[rgba(0,255,100,0.3)] bg-[rgba(0,255,100,0.05)]',
-  pending: 'text-yellow-400 border-[rgba(251,191,36,0.3)] bg-[rgba(251,191,36,0.05)]',
-}
-
 export default function IpsPage() {
-  const [ips, setIps] = useState<Ip[]>([])
+  const [result, setResult] = useState<PaginatedResponse>({ data: [], total: 0, page: 1, limit: 10, totalPages: 0 })
   const [loading, setLoading] = useState(true)
   const [showModal, setShowModal] = useState(false)
   const [editingIp, setEditingIp] = useState<Ip | null>(null)
@@ -94,27 +97,25 @@ export default function IpsPage() {
   const [page, setPage] = useState(1)
   const [perPage, setPerPage] = useState(10)
   const [search, setSearch] = useState('')
+  const [searchInput, setSearchInput] = useState('')
   const user = getUser()
 
-  const fetchIps = async () => {
+  const fetchIps = useCallback(async () => {
+    setLoading(true)
     try {
-      const res = await api.get('/ips')
-      setIps(res.data)
+      const res = await api.get('/ips', { params: { page, limit: perPage, search } })
+      setResult(res.data)
     } finally {
       setLoading(false)
     }
-  }
+  }, [page, perPage, search])
 
-  useEffect(() => { fetchIps() }, [])
+  useEffect(() => { fetchIps() }, [fetchIps])
 
-  const filtered = ips.filter(ip =>
-    ip.address.toLowerCase().includes(search.toLowerCase()) ||
-    (ip.description || '').toLowerCase().includes(search.toLowerCase()) ||
-    (ip.createdBy?.username || '').toLowerCase().includes(search.toLowerCase())
-  )
-
-  const totalPages = Math.ceil(filtered.length / perPage)
-  const paginated = filtered.slice((page - 1) * perPage, page * perPage)
+  useEffect(() => {
+    const t = setTimeout(() => { setSearch(searchInput); setPage(1) }, 400)
+    return () => clearTimeout(t)
+  }, [searchInput])
 
   const openCreate = () => {
     setEditingIp(null)
@@ -141,7 +142,6 @@ export default function IpsPage() {
   const handleSave = async () => {
     const protection = isProtectedIp(form.address)
     if (protection) { setFormError(`⛔ ${protection}`); return }
-
     setSaving(true)
     setFormError('')
     try {
@@ -187,6 +187,40 @@ export default function IpsPage() {
 
   const canApprove = user?.role === 'super_admin' || user?.role === 'lidertecnico'
   const isFormBlocked = !!isProtectedIp(form.address) && !editingIp
+  const { data: ips, total, totalPages } = result
+
+  const renderPagination = () => {
+    if (totalPages <= 1) return null
+    const pages: (number | 'ellipsis')[] = []
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i)
+    } else {
+      pages.push(1)
+      if (page > 4) pages.push('ellipsis')
+      for (let i = Math.max(2, page - 2); i <= Math.min(totalPages - 1, page + 2); i++) pages.push(i)
+      if (page < totalPages - 3) pages.push('ellipsis')
+      pages.push(totalPages)
+    }
+    return (
+      <div className="flex items-center justify-center gap-1 flex-wrap">
+        <button onClick={() => setPage(1)} disabled={page === 1}
+          className="font-[family-name:var(--font-mono)] text-[10px] px-2 py-1.5 border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:border-[rgba(0,255,100,0.3)] hover:text-[rgba(0,255,100,0.7)] disabled:opacity-20 transition-all">«</button>
+        <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
+          className="font-[family-name:var(--font-mono)] text-[10px] px-3 py-1.5 border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:border-[rgba(0,255,100,0.3)] hover:text-[rgba(0,255,100,0.7)] disabled:opacity-20 transition-all">‹ ANT</button>
+        {pages.map((n, i) => n === 'ellipsis'
+          ? <span key={`e${i}`} className="font-[family-name:var(--font-mono)] text-[10px] text-white/20 px-1">…</span>
+          : <button key={n} onClick={() => setPage(n)}
+              className={`font-[family-name:var(--font-mono)] text-[10px] w-8 h-8 border transition-all
+                ${page === n ? 'border-[rgba(0,255,100,0.5)] text-[#00ff64] bg-[rgba(0,255,100,0.08)]' : 'border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.3)] hover:border-[rgba(0,255,100,0.3)]'}`}
+            >{n}</button>
+        )}
+        <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
+          className="font-[family-name:var(--font-mono)] text-[10px] px-3 py-1.5 border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:border-[rgba(0,255,100,0.3)] hover:text-[rgba(0,255,100,0.7)] disabled:opacity-20 transition-all">PRÓ ›</button>
+        <button onClick={() => setPage(totalPages)} disabled={page === totalPages}
+          className="font-[family-name:var(--font-mono)] text-[10px] px-2 py-1.5 border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:border-[rgba(0,255,100,0.3)] hover:text-[rgba(0,255,100,0.7)] disabled:opacity-20 transition-all">»</button>
+      </div>
+    )
+  }
 
   return (
     <div className="p-4 md:p-6 space-y-4 md:space-y-6">
@@ -211,24 +245,18 @@ export default function IpsPage() {
         </div>
       )}
 
-      {/* Search + Pagination controls */}
+      {/* Search + Controls */}
       <div className="flex flex-wrap items-center gap-3">
-        {/* Search */}
         <div className="relative flex-1 min-w-[200px]">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[rgba(0,255,100,0.4)] text-xs">⌕</span>
-          <input
-            type="text"
-            value={search}
-            onChange={e => { setSearch(e.target.value); setPage(1) }}
+          <input type="text" value={searchInput} onChange={e => setSearchInput(e.target.value)}
             placeholder="Buscar por IP, descrição ou usuário..."
-            className="w-full bg-black/40 border border-[rgba(0,255,100,0.15)] pl-8 pr-4 py-2 text-white font-[family-name:var(--font-mono)] text-[11px] outline-none focus:border-[rgba(0,255,100,0.4)] transition-all placeholder:text-white/20"
-          />
-          {search && (
-            <button onClick={() => { setSearch(''); setPage(1) }} className="absolute right-3 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.3)] hover:text-white transition-all text-xs">✕</button>
+            className="w-full bg-black/40 border border-[rgba(0,255,100,0.15)] pl-8 pr-4 py-2 text-white font-[family-name:var(--font-mono)] text-[11px] outline-none focus:border-[rgba(0,255,100,0.4)] transition-all placeholder:text-white/20" />
+          {searchInput && (
+            <button onClick={() => { setSearchInput(''); setSearch(''); setPage(1) }}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[rgba(255,255,255,0.3)] hover:text-white text-xs">✕</button>
           )}
         </div>
-
-        {/* Per page */}
         <div className="flex items-center gap-2">
           <span className="font-[family-name:var(--font-mono)] text-[9px] text-[rgba(0,255,100,0.4)] tracking-[2px] uppercase hidden sm:block">Por página:</span>
           {[10, 20, 50].map(n => (
@@ -238,9 +266,8 @@ export default function IpsPage() {
             >{n}</button>
           ))}
         </div>
-
         <span className="font-[family-name:var(--font-mono)] text-[9px] text-[rgba(255,255,255,0.3)] tracking-wider whitespace-nowrap">
-          {filtered.length} resultado{filtered.length !== 1 ? 's' : ''} · pág. {page}/{totalPages || 1}
+          {total} resultado{total !== 1 ? 's' : ''} · pág. {page}/{totalPages || 1}
         </span>
       </div>
 
@@ -262,12 +289,12 @@ export default function IpsPage() {
                 </tr>
               </thead>
               <tbody>
-                {paginated.length === 0 && (
+                {ips.length === 0 && (
                   <tr><td colSpan={7} className="px-4 py-12 text-center font-[family-name:var(--font-mono)] text-[10px] text-[rgba(255,255,255,0.2)] tracking-wider">
                     {search ? `Nenhum resultado para "${search}"` : 'Nenhum IP cadastrado'}
                   </td></tr>
                 )}
-                {paginated.map(ip => (
+                {ips.map(ip => (
                   <tr key={ip.id} className="border-b border-[rgba(0,255,100,0.04)] hover:bg-[rgba(0,255,100,0.02)] transition-all">
                     <td className="px-4 py-3 font-[family-name:var(--font-mono)] text-sm text-white tracking-wider">{ip.address}</td>
                     <td className="px-4 py-3 font-[family-name:var(--font-mono)] text-[11px] text-[rgba(255,255,255,0.4)] max-w-[200px] truncate">{ip.description || '—'}</td>
@@ -296,12 +323,12 @@ export default function IpsPage() {
 
           {/* Mobile cards */}
           <div className="md:hidden space-y-3">
-            {paginated.length === 0 && (
+            {ips.length === 0 && (
               <div className="text-center py-12 font-[family-name:var(--font-mono)] text-[10px] text-[rgba(255,255,255,0.2)] tracking-wider">
                 {search ? `Nenhum resultado para "${search}"` : 'Nenhum IP cadastrado'}
               </div>
             )}
-            {paginated.map(ip => (
+            {ips.map(ip => (
               <div key={ip.id} className="relative bg-[rgba(255,255,255,0.02)] border border-[rgba(0,255,100,0.1)] p-4">
                 <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[rgba(0,255,100,0.2)] to-transparent" />
                 <div className="flex items-start justify-between mb-3">
@@ -338,25 +365,7 @@ export default function IpsPage() {
             ))}
           </div>
 
-          {/* Pagination */}
-          {totalPages > 1 && (
-            <div className="flex items-center justify-center gap-2 flex-wrap">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                className="font-[family-name:var(--font-mono)] text-[10px] px-3 py-1.5 border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:border-[rgba(0,255,100,0.3)] hover:text-[rgba(0,255,100,0.7)] disabled:opacity-20 transition-all">
-                ‹ ANTERIOR
-              </button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map(n => (
-                <button key={n} onClick={() => setPage(n)}
-                  className={`font-[family-name:var(--font-mono)] text-[10px] w-8 h-8 border transition-all
-                    ${page === n ? 'border-[rgba(0,255,100,0.5)] text-[#00ff64] bg-[rgba(0,255,100,0.08)]' : 'border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.3)] hover:border-[rgba(0,255,100,0.3)]'}`}
-                >{n}</button>
-              ))}
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                className="font-[family-name:var(--font-mono)] text-[10px] px-3 py-1.5 border border-[rgba(255,255,255,0.1)] text-[rgba(255,255,255,0.4)] hover:border-[rgba(0,255,100,0.3)] hover:text-[rgba(0,255,100,0.7)] disabled:opacity-20 transition-all">
-                PRÓXIMA ›
-              </button>
-            </div>
-          )}
+          {renderPagination()}
         </>
       )}
 
@@ -378,13 +387,8 @@ export default function IpsPage() {
               <div>
                 <label className="font-[family-name:var(--font-mono)] text-[9px] text-[rgba(0,255,100,0.5)] tracking-[3px] uppercase block mb-2">Endereço IP / CIDR</label>
                 <div className="flex gap-2">
-                  <input
-                    type="text"
-                    value={form.address}
-                    onChange={e => handleAddressChange(e.target.value)}
-                    disabled={!!editingIp}
-                    placeholder="000.000.000.000"
-                    maxLength={15}
+                  <input type="text" value={form.address} onChange={e => handleAddressChange(e.target.value)}
+                    disabled={!!editingIp} placeholder="000.000.000.000" maxLength={15}
                     className={`flex-1 bg-black/40 border px-4 py-2.5 text-white font-[family-name:var(--font-mono)] text-sm outline-none transition-all placeholder:text-white/10 disabled:opacity-40
                       ${isFormBlocked ? 'border-red-500/50 focus:border-red-500' : 'border-[rgba(0,255,100,0.15)] focus:border-[rgba(0,255,100,0.5)]'}`}
                   />
@@ -413,9 +417,7 @@ export default function IpsPage() {
               </div>
 
               {formError && (
-                <div className="bg-red-950/30 border border-red-500/30 px-4 py-2.5 font-[family-name:var(--font-mono)] text-[11px] text-red-400 tracking-wider">
-                  {formError}
-                </div>
+                <div className="bg-red-950/30 border border-red-500/30 px-4 py-2.5 font-[family-name:var(--font-mono)] text-[11px] text-red-400 tracking-wider">{formError}</div>
               )}
 
               <div className="flex gap-3 pt-2">

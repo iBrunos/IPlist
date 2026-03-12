@@ -2,7 +2,7 @@ import { DashboardService } from './dashboard.service';
 export declare class DashboardController {
     private readonly dashboardService;
     constructor(dashboardService: DashboardService);
-    getStats(): Promise<{
+    getStats(range?: string): Promise<{
         totalIps: number;
         totalHashes: number;
         totalDomains: number;
@@ -24,11 +24,12 @@ export declare class DashboardController {
             details: string | null;
             userId: string | null;
         })[];
-        last7Days: {
+        chartData: {
             date: string;
             ips: number;
             hashes: number;
             domains: number;
         }[];
+        range: string;
     }>;
 }

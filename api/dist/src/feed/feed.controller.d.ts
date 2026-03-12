@@ -3,7 +3,7 @@ import { FeedService } from './feed.service';
 export declare class FeedController {
     private readonly feedService;
     constructor(feedService: FeedService);
-    getIpFeed(res: Response): Promise<void>;
-    getHashFeed(res: Response): Promise<void>;
-    getDomainFeed(res: Response): Promise<void>;
+    ips(res: Response): Promise<void>;
+    hashes(res: Response): Promise<void>;
+    domains(res: Response): Promise<void>;
 }

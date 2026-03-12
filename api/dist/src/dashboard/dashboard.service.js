@@ -17,7 +17,7 @@ let DashboardService = class DashboardService {
     constructor(prisma) {
         this.prisma = prisma;
     }
-    async getStats() {
+    async getStats(range = '7d') {
         const [totalIps, totalHashes, totalDomains, pendingIps, pendingHashes, pendingDomains, recentLogs,] = await Promise.all([
             this.prisma.ip.count({ where: { status: 'approved' } }),
             this.prisma.hash.count({ where: { status: 'approved' } }),
@@ -31,46 +31,58 @@ let DashboardService = class DashboardService {
                 include: { user: { select: { username: true, role: true } } },
             }),
         ]);
-        const last7Days = await this.getLast7DaysData();
+        const chartData = await this.getChartData(range);
         return {
-            totalIps,
-            totalHashes,
-            totalDomains,
+            totalIps, totalHashes, totalDomains,
             pendingTotal: pendingIps + pendingHashes + pendingDomains,
-            pendingIps,
-            pendingHashes,
-            pendingDomains,
+            pendingIps, pendingHashes, pendingDomains,
             recentLogs,
-            last7Days,
+            chartData,
+            range,
         };
     }
-    async getLast7DaysData() {
-        const days = [];
-        for (let i = 6; i >= 0; i--) {
-            const date = new Date();
-            date.setDate(date.getDate() - i);
-            date.setHours(0, 0, 0, 0);
-            const nextDate = new Date(date);
-            nextDate.setDate(nextDate.getDate() + 1);
+    async getChartData(range) {
+        const now = new Date();
+        if (range === '12h') {
+            const slots = [];
+            for (let i = 11; i >= 0; i--) {
+                const from = new Date(now);
+                from.setHours(from.getHours() - i, 0, 0, 0);
+                const to = new Date(from);
+                to.setHours(to.getHours() + 1);
+                const [ips, hashes, domains] = await Promise.all([
+                    this.prisma.ip.count({ where: { createdAt: { gte: from, lt: to } } }),
+                    this.prisma.hash.count({ where: { createdAt: { gte: from, lt: to } } }),
+                    this.prisma.domain.count({ where: { createdAt: { gte: from, lt: to } } }),
+                ]);
+                slots.push({
+                    date: from.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }),
+                    ips, hashes, domains,
+                });
+            }
+            return slots;
+        }
+        const days = range === '30d' ? 30 : 7;
+        const slots = [];
+        for (let i = days - 1; i >= 0; i--) {
+            const from = new Date(now);
+            from.setDate(from.getDate() - i);
+            from.setHours(0, 0, 0, 0);
+            const to = new Date(from);
+            to.setDate(to.getDate() + 1);
             const [ips, hashes, domains] = await Promise.all([
-                this.prisma.ip.count({
-                    where: { createdAt: { gte: date, lt: nextDate } }
-                }),
-                this.prisma.hash.count({
-                    where: { createdAt: { gte: date, lt: nextDate } }
-                }),
-                this.prisma.domain.count({
-                    where: { createdAt: { gte: date, lt: nextDate } }
-                }),
+                this.prisma.ip.count({ where: { createdAt: { gte: from, lt: to } } }),
+                this.prisma.hash.count({ where: { createdAt: { gte: from, lt: to } } }),
+                this.prisma.domain.count({ where: { createdAt: { gte: from, lt: to } } }),
             ]);
-            days.push({
-                date: date.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit' }),
-                ips,
-                hashes,
-                domains,
+            slots.push({
+                date: range === '30d'
+                    ? from.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })
+                    : from.toLocaleDateString('pt-BR', { weekday: 'short', day: '2-digit' }),
+                ips, hashes, domains,
             });
         }
-        return days;
+        return slots;
     }
 };
 exports.DashboardService = DashboardService;

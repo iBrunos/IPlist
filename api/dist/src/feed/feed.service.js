@@ -12,66 +12,36 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.FeedService = void 0;
 const common_1 = require("@nestjs/common");
 const prisma_service_1 = require("../database/prisma.service");
-const audit_service_1 = require("../audit/audit.service");
 let FeedService = class FeedService {
     prisma;
-    audit;
-    constructor(prisma, audit) {
+    constructor(prisma) {
         this.prisma = prisma;
-        this.audit = audit;
     }
-    isExpired(expiresAt) {
-        if (!expiresAt)
-            return false;
-        return new Date() > expiresAt;
-    }
-    async getIpFeed() {
+    async getIps() {
         const ips = await this.prisma.ip.findMany({
-            where: { status: 'approved' }
+            where: { status: 'approved' },
+            select: { address: true }
         });
-        const active = ips
-            .filter(ip => !this.isExpired(ip.expiresAt))
-            .map(ip => ip.address);
-        await this.audit.log({
-            action: 'FEED_GENERATED',
-            entity: 'FEED',
-            details: `Feed de IPs gerado com ${active.length} entradas`,
-        });
-        return active.join('\n');
+        return ips.map(i => i.address);
     }
-    async getHashFeed() {
+    async getHashes() {
         const hashes = await this.prisma.hash.findMany({
-            where: { status: 'approved' }
+            where: { status: 'approved' },
+            select: { value: true }
         });
-        const active = hashes
-            .filter(h => !this.isExpired(h.expiresAt))
-            .map(h => h.value);
-        await this.audit.log({
-            action: 'FEED_GENERATED',
-            entity: 'FEED',
-            details: `Feed de Hashes gerado com ${active.length} entradas`,
-        });
-        return active.join('\n');
+        return hashes.map(h => h.value);
     }
-    async getDomainFeed() {
+    async getDomains() {
         const domains = await this.prisma.domain.findMany({
-            where: { status: 'approved' }
+            where: { status: 'approved' },
+            select: { domain: true }
         });
-        const active = domains
-            .filter(d => !this.isExpired(d.expiresAt))
-            .map(d => d.domain);
-        await this.audit.log({
-            action: 'FEED_GENERATED',
-            entity: 'FEED',
-            details: `Feed de Domínios gerado com ${active.length} entradas`,
-        });
-        return active.join('\n');
+        return domains.map(d => d.domain);
     }
 };
 exports.FeedService = FeedService;
 exports.FeedService = FeedService = __decorate([
     (0, common_1.Injectable)(),
-    __metadata("design:paramtypes", [prisma_service_1.PrismaService,
-        audit_service_1.AuditService])
+    __metadata("design:paramtypes", [prisma_service_1.PrismaService])
 ], FeedService);
 //# sourceMappingURL=feed.service.js.map

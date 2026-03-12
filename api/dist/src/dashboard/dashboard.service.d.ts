@@ -2,7 +2,7 @@ import { PrismaService } from '../database/prisma.service';
 export declare class DashboardService {
     private prisma;
     constructor(prisma: PrismaService);
-    getStats(): Promise<{
+    getStats(range?: string): Promise<{
         totalIps: number;
         totalHashes: number;
         totalDomains: number;
@@ -24,12 +24,13 @@ export declare class DashboardService {
             details: string | null;
             userId: string | null;
         })[];
-        last7Days: {
+        chartData: {
             date: string;
             ips: number;
             hashes: number;
             domains: number;
         }[];
+        range: string;
     }>;
-    private getLast7DaysData;
+    private getChartData;
 }

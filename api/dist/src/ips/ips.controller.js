@@ -25,8 +25,12 @@ let IpsController = class IpsController {
     create(body, req) {
         return this.ipsService.create(body, req.user);
     }
-    findAll(req) {
-        return this.ipsService.findAll(req.user);
+    findAll(req, page = '1', limit = '10', search = '') {
+        return this.ipsService.findAll(req.user, {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            search,
+        });
     }
     approve(id, req) {
         return this.ipsService.approve(id, req.user);
@@ -50,8 +54,11 @@ __decorate([
 __decorate([
     (0, common_1.Get)(),
     __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object, Object, Object]),
     __metadata("design:returntype", void 0)
 ], IpsController.prototype, "findAll", null);
 __decorate([

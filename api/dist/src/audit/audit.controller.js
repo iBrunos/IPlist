@@ -24,8 +24,12 @@ let AuditController = class AuditController {
     constructor(auditService) {
         this.auditService = auditService;
     }
-    findAll(req) {
-        return this.auditService.findAll(req.user);
+    findAll(req, page = '1', limit = '20', search = '') {
+        return this.auditService.findAll(req.user, {
+            page: parseInt(page),
+            limit: parseInt(limit),
+            search,
+        });
     }
 };
 exports.AuditController = AuditController;
@@ -33,8 +37,11 @@ __decorate([
     (0, common_1.Get)(),
     (0, roles_decorator_1.Roles)(roles_enum_1.Role.SUPER_ADMIN, roles_enum_1.Role.LIDER_TECNICO),
     __param(0, (0, common_1.Request)()),
+    __param(1, (0, common_1.Query)('page')),
+    __param(2, (0, common_1.Query)('limit')),
+    __param(3, (0, common_1.Query)('search')),
     __metadata("design:type", Function),
-    __metadata("design:paramtypes", [Object]),
+    __metadata("design:paramtypes", [Object, Object, Object, Object]),
     __metadata("design:returntype", void 0)
 ], AuditController.prototype, "findAll", null);
 exports.AuditController = AuditController = __decorate([

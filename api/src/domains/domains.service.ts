@@ -36,23 +36,39 @@ export class DomainsService {
     return domain
   }
 
-  async findAll(requester: any) {
+  async findAll(requester: any, { page = 1, limit = 10, search = '' } = {}) {
+    const skip = (page - 1) * limit
+
+    const searchFilter = search ? {
+      OR: [
+        { domain: { contains: search, mode: 'insensitive' as const } },
+        { description: { contains: search, mode: 'insensitive' as const } },
+      ]
+    } : {}
+
+    let roleFilter: any = {}
     if (requester.role === Role.TECNICO) {
-      return this.prisma.domain.findMany({
-        where: { createdById: requester.id }
-      })
+      roleFilter = { createdById: requester.id }
+    } else if (requester.role === Role.LIDER_TECNICO) {
+      roleFilter = { createdBy: { equipe: requester.equipe } }
     }
 
-    if (requester.role === Role.LIDER_TECNICO) {
-      return this.prisma.domain.findMany({
-        where: { createdBy: { equipe: requester.equipe } },
-        include: { createdBy: { select: { username: true, equipe: true } } }
-      })
-    }
+    const finalWhere = Object.keys(roleFilter).length > 0 && search
+      ? { AND: [roleFilter, { OR: searchFilter.OR }] }
+      : { ...roleFilter, ...searchFilter }
 
-    return this.prisma.domain.findMany({
-      include: { createdBy: { select: { username: true, equipe: true } } }
-    })
+    const [data, total] = await Promise.all([
+      this.prisma.domain.findMany({
+        where: finalWhere,
+        skip,
+        take: limit,
+        orderBy: { createdAt: 'desc' },
+        include: { createdBy: { select: { username: true, equipe: true } } },
+      }),
+      this.prisma.domain.count({ where: finalWhere }),
+    ])
+
+    return { data, total, page, limit, totalPages: Math.ceil(total / limit) }
   }
 
   async approve(id: string, requester: any) {

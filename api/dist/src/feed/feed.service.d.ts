@@ -1,11 +1,8 @@
 import { PrismaService } from '../database/prisma.service';
-import { AuditService } from '../audit/audit.service';
 export declare class FeedService {
     private prisma;
-    private audit;
-    constructor(prisma: PrismaService, audit: AuditService);
-    private isExpired;
-    getIpFeed(): Promise<string>;
-    getHashFeed(): Promise<string>;
-    getDomainFeed(): Promise<string>;
+    constructor(prisma: PrismaService);
+    getIps(): Promise<string[]>;
+    getHashes(): Promise<string[]>;
+    getDomains(): Promise<string[]>;
 }

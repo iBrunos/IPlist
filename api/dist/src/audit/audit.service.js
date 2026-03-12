@@ -29,24 +29,35 @@ let AuditService = class AuditService {
             }
         });
     }
-    async findAll(requester) {
-        if (requester.role === roles_enum_1.Role.LIDER_TECNICO) {
-            return this.prisma.auditLog.findMany({
-                where: {
-                    user: { equipe: requester.equipe }
-                },
+    async findAll(requester, { page = 1, limit = 20, search = '' } = {}) {
+        const skip = (page - 1) * limit;
+        const searchFilter = search ? {
+            OR: [
+                { action: { contains: search, mode: 'insensitive' } },
+                { entity: { contains: search, mode: 'insensitive' } },
+                { details: { contains: search, mode: 'insensitive' } },
+                { user: { username: { contains: search, mode: 'insensitive' } } },
+            ]
+        } : {};
+        const roleFilter = requester.role === roles_enum_1.Role.LIDER_TECNICO
+            ? { user: { equipe: requester.equipe } }
+            : {};
+        const finalWhere = Object.keys(roleFilter).length > 0 && search
+            ? { AND: [roleFilter, { OR: searchFilter.OR }] }
+            : { ...roleFilter, ...searchFilter };
+        const [data, total] = await Promise.all([
+            this.prisma.auditLog.findMany({
+                where: finalWhere,
+                skip,
+                take: limit,
+                orderBy: { createdAt: 'desc' },
                 include: {
                     user: { select: { username: true, equipe: true, role: true } }
                 },
-                orderBy: { createdAt: 'desc' }
-            });
-        }
-        return this.prisma.auditLog.findMany({
-            include: {
-                user: { select: { username: true, equipe: true, role: true } }
-            },
-            orderBy: { createdAt: 'desc' }
-        });
+            }),
+            this.prisma.auditLog.count({ where: finalWhere }),
+        ]);
+        return { data, total, page, limit, totalPages: Math.ceil(total / limit) };
     }
 };
 exports.AuditService = AuditService;

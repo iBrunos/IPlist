@@ -36,24 +36,40 @@ export class IpsService {
     return ip
   }
 
-  async findAll(requester: any) {
-    if (requester.role === Role.TECNICO) {
-      return this.prisma.ip.findMany({
-        where: { createdById: requester.id }
-      })
-    }
+ async findAll(requester: any, { page = 1, limit = 10, search = '' } = {}) {
+  const skip = (page - 1) * limit
 
-    if (requester.role === Role.LIDER_TECNICO) {
-      return this.prisma.ip.findMany({
-        where: { createdBy: { equipe: requester.equipe } },
-        include: { createdBy: { select: { username: true, equipe: true } } }
-      })
-    }
+  const searchFilter = search ? {
+    OR: [
+      { address: { contains: search, mode: 'insensitive' as const } },
+      { description: { contains: search, mode: 'insensitive' as const } },
+    ]
+  } : {}
 
-    return this.prisma.ip.findMany({
-      include: { createdBy: { select: { username: true, equipe: true } } }
-    })
+  let roleFilter: any = {}
+  if (requester.role === Role.TECNICO) {
+    roleFilter = { createdById: requester.id }
+  } else if (requester.role === Role.LIDER_TECNICO) {
+    roleFilter = { createdBy: { equipe: requester.equipe } }
   }
+
+  const finalWhere = Object.keys(roleFilter).length > 0 && search
+    ? { AND: [roleFilter, { OR: searchFilter.OR }] }
+    : { ...roleFilter, ...searchFilter }
+
+  const [data, total] = await Promise.all([
+    this.prisma.ip.findMany({
+      where: finalWhere,
+      skip,
+      take: limit,
+      orderBy: { createdAt: 'desc' },
+      include: { createdBy: { select: { username: true, equipe: true } } },
+    }),
+    this.prisma.ip.count({ where: finalWhere }),
+  ])
+
+  return { data, total, page, limit, totalPages: Math.ceil(total / limit) }
+}
 
   async approve(id: string, requester: any) {
     if (requester.role === Role.TECNICO) {

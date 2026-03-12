@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request } from '@nestjs/common'
+import { Controller, Get, Post, Put, Delete, Body, Param, UseGuards, Request, Query } from '@nestjs/common'
 import { DomainsService } from './domains.service'
 import { JwtAuthGuard } from '../auth/jwt-auth.guard'
 import { RolesGuard } from '../auth/roles.guard'
@@ -15,8 +15,17 @@ export class DomainsController {
   }
 
   @Get()
-  findAll(@Request() req: any) {
-    return this.domainsService.findAll(req.user)
+  findAll(
+    @Request() req: any,
+    @Query('page') page = '1',
+    @Query('limit') limit = '10',
+    @Query('search') search = '',
+  ) {
+    return this.domainsService.findAll(req.user, {
+      page: parseInt(page),
+      limit: parseInt(limit),
+      search,
+    })
   }
 
   @Put(':id/approve')

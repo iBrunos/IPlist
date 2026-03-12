@@ -14,18 +14,29 @@ export declare class HashesController {
         value: string;
         type: string;
     }>;
-    findAll(req: any): Promise<{
-        id: string;
-        createdAt: Date;
-        updatedAt: Date;
-        description: string | null;
-        expiresAt: Date | null;
-        status: string;
-        createdById: string;
-        approvedById: string | null;
-        value: string;
-        type: string;
-    }[]>;
+    findAll(req: any, page?: string, limit?: string, search?: string): Promise<{
+        data: ({
+            createdBy: {
+                username: string;
+                equipe: string;
+            };
+        } & {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            description: string | null;
+            expiresAt: Date | null;
+            status: string;
+            createdById: string;
+            approvedById: string | null;
+            value: string;
+            type: string;
+        })[];
+        total: number;
+        page: number;
+        limit: number;
+        totalPages: number;
+    }>;
     approve(id: string, req: any): Promise<{
         id: string;
         createdAt: Date;
